@@ -224,4 +224,4 @@ sh run.sh pcom3
 которая наглядно демострирует принцип раскрутки компилятора
 и запуска на нем программы основанной на дополненном функционале.
 
-![T-диаграмма исполнения `hello.pas`](https://github.com/AngelicHedgehog/BMSTU-Designing-Compilers/assets/102258145/eb01bf0e-0226-4eee-83d8-8adee4e12753)
+![T-диаграмма исполнения `hello.pas`](https://shorturl.at/lwXY9)

@@ -1,0 +1,99 @@
+user@guk-330-au-pc02 p5 $ diff -u pcom1.pas pcom2.pas
+--- pcom1.pas	2020-02-15 14:28:42.000000000 +0300
++++ pcom2.pas	2024-02-12 20:59:59.236616008 +0300
+@@ -811,7 +811,6 @@
+   { find lower case of character }
+   function lcase(c: char): char;
+   begin
+-    if (c >= 'A') and (c<= 'Z') then c := chr(ord(c)-ord('A')+ord('a'));
+     lcase := c
+   end { lcase };
+
+user@guk-330-au-pc02 p5 $ diff -u pcom2.pas pcom3.pas
+--- pcom2.pas	2024-02-12 20:59:59.236616008 +0300
++++ pcom3.pas	2024-02-12 20:36:56.311767635 +0300
+@@ -1377,7 +1377,7 @@
+                     until chartp[ch] <>  number
+                 end;
+               if lcase(ch) = 'e' then
+-                begin k := k+1; if k <= DIGMAX then digit[k] := ch;
++                begin k := k+1; if k <= digmax then digit[k] := ch;
+                   nextch;
+                   if (ch = '+') or (ch ='-') then
+                     begin k := k+1; if k <= digmax then digit[k] := ch;
+@@ -1480,7 +1480,7 @@
+              until iscmte or (ch = ')') or eof(input);
+              if not iscmte then nextch; goto 1
+            end
+-         else if ch = '.' then begin sy := LbRaCk; nextch end
++         else if ch = '.' then begin sy := lbrack; nextch end
+          else sy := lparent;
+          op := noop
+        end;
+user@guk-330-au-pc02 p5 $ sh run.sh prd1 hello.pas
+P5 Pascal interpreter vs. 1.0
+
+Assembling/loading program
+Running program
+
+P5 Pascal compiler vs. 1.0
+
+
+     1       40 program hello(output);
+     2       40
+     3       40 var x, X: integer;
+     3   ****          ^101
+     4       48
+     5       48 begin
+     6        3     x := 1;
+     7        7     X := 10;
+     8        9     writeln(x, X);
+     9       19 end.
+
+Errors in program: 1
+
+Error numbers in listing:
+-------------------------
+101  Identifier declared twice
+
+
+program complete
+P5 Pascal interpreter vs. 1.0
+
+Assembling/loading program
+Running program
+
+         10         10
+
+program complete
+user@guk-330-au-pc02 p5 $ sh run.sh prd3 hello.pas
+P5 Pascal interpreter vs. 1.0
+
+Assembling/loading program
+Running program
+
+P5 Pascal compiler vs. 1.0
+
+
+     1       40 program hello(output);
+     2       40
+     3       40 var x, X: integer;
+     4       48
+     5       48 begin
+     6        3     x := 1;
+     7        7     X := 10;
+     8        9     writeln(x, X);
+     9       19 end.
+
+Errors in program: 0
+
+program complete
+P5 Pascal interpreter vs. 1.0
+
+Assembling/loading program
+Running program
+
+          1         10
+
+program complete
+user@guk-330-au-pc02 p5 $

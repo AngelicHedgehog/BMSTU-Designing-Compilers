@@ -1,6 +1,5 @@
 cp $1 prd
-./pint < $2
+./pint < hello.pas
 mv prr prd
 ./pint
-rm prr
-rm prd
+rm pr{r,d}

@@ -1,4 +1,4 @@
-cd prd2 prd
+cp pcom2 prd
 ./pint < pcom3.pas
-mv prr prd3
+mv prr pcom3
 rm prd

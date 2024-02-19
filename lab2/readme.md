@@ -1,3 +1,44 @@
+% Лабораторная работа № 2.1. Синтаксические деревья
+% 19 февраля 2024 г.
+% Сергей Виленский, ИУ9-62Б
+
+# Цель работы
+Целью данной работы является изучение
+представления синтаксических деревьев
+в памяти компилятора и приобретение
+навыков преобразования синтаксических деревьев.
+
+# Индивидуальный вариант
+Любая неанонимная функция должна в начале выполнения
+и перед возвратом (оператором `return` или при
+достижении конца блока) выводить слово `"Starts "`
+и `"Ends "`, соответственно, своё имя и время,
+прошедшее с начала выполнения программы (см.
+функции `time.Now()` и `time.Since()`, можно использовать
+`defer`).
+
+# Реализация
+
+Демонстрационная программа:
+
+```go
+package main
+
+func fib(a int) int {
+	if a <= 1 {
+		return 1
+	}
+	return fib(a-1) + fib(a-2)
+}
+
+func main() {
+	fib(3)
+}
+```
+
+Программа, осуществляющая преобразование синтаксического дерева:
+
+```go
 package main
 
 import (
@@ -88,7 +129,7 @@ func insertTimerSet(file *ast.File) {
 func insertFuncTimer(file *ast.File) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		if FuncDecl, ok := node.(*ast.FuncDecl); ok {
-			generateCallExprNode := func(startEnd string) *ast.CallExpr {
+			generateCallExprNode := func() *ast.CallExpr {
 				return &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
@@ -103,7 +144,7 @@ func insertFuncTimer(file *ast.File) {
 					Args: []ast.Expr{
 						&ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"" + startEnd + " %s %s\\n\"",
+							Value: "\"Starts %s %s\\n\"",
 						},
 						&ast.BasicLit{
 							Kind:  token.STRING,
@@ -142,11 +183,11 @@ func insertFuncTimer(file *ast.File) {
 			FuncDecl.Body.List = append(
 				append(append([]ast.Stmt{},
 					&ast.ExprStmt{
-						X: generateCallExprNode("Starts"),
+						X: generateCallExprNode(),
 					},
 				),
 					&ast.DeferStmt{
-						Call: generateCallExprNode("Ends"),
+						Call: generateCallExprNode(),
 					},
 				),
 				FuncDecl.Body.List...)
@@ -187,3 +228,59 @@ func main() {
 		fmt.Printf("Error: %v", err)
 	}
 }
+```
+
+# Тестирование
+
+Результат трансформации демонстрационной программы:
+
+```go
+package main
+
+import "time"
+import "fmt"
+
+var ____NOW____ = time.Now()
+
+func fib(a int) int {
+        fmt.Printf("Starts %s %s\n", "fib", time.Since(____NOW____).String())
+        defer fmt.Printf("Ends %s %s\n", "fib", time.Since(____NOW____).String())
+        if a <= 1 {
+                return 1
+        }
+        return fib(a-1) + fib(a-2)
+}
+
+func main() {
+        fmt.Printf("Starts %s %s\n", "main", time.Since(____NOW____).String())
+        defer fmt.Printf("Ends %s %s\n", "main", time.Since(____NOW____).String())
+        fib(3)
+}
+```
+
+Вывод тестового примера на `stdout` (если необходимо)
+
+```
+Starts main 0s
+Starts fib 509.9µs
+Starts fib 509.9µs
+Starts fib 509.9µs
+Ends fib 1.0238ms
+Starts fib 1.0238ms
+Ends fib 1.0238ms
+Ends fib 509.9µs
+Starts fib 1.0238ms
+Ends fib 1.0238ms
+Ends fib 509.9µs
+Ends main 504.6µs
+```
+
+# Вывод
+В ходе выполнения данной лабораторной работы были изучены
+структуры хранения данных лексических деревьев разбора
+текста программы на языке программирования Golang, а также
+методы их модификации.
+В результате выполнения лабораторной работы была разработана
+программа, выполняющая декорирование всех неанонимных
+функций в пользу вывода в стандартный поток отладочных
+данных о времени начала и завершения работы функции.

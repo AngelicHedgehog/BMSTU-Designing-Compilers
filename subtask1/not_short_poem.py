@@ -1,0 +1,2 @@
+a=('a partridge in a pear tree','two turtle doves\nand ','three french hens, ','four calling birds, ','five gold rings;\n','six geese a-laying, ','seven swans a-swimming,\n','eight maids a-milking, ','nine ladies dancing, ','ten lords a-leaping,\n','eleven pipers piping, ','twelve drummers drumming, ')
+for i in range(12):print(f"On the {('first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth')[i]} day of Christmas my true love gave to me\n{''.join(a[i::-1])}.\n")

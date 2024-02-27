@@ -133,21 +133,21 @@ S0091.000
 E0180.001
 E0181.000
 
- S 0000D'000"000      
- S 0089D'059"059     
- S 0090D'000"000     
-S0089D'060"059
-S0089D'059"060
-S0090D'001"000
-S0090D'000"001
+ S 0000  D  000  '  000  "      
+ S 0089  D  059  '  059  "   
+ S 0090  D  000  '  000  "   
+S0089D060'059"
+S0089D059'060"
+S0090D001'000"
+S0090D000'001"
 
- E 0000D'000"000      
- E 0089D'059"059     
- E 0090D'000"000     
-E0089D'060"059
-E0089D'059"060
-E0090D'001"000
-E0090D'000"001
+ E 0000  D  000  '  000  "    
+ E 0089  D  059  '  059  "   
+ E 0180  D  000  '  000  "   
+E0179D060'059"
+E0179D059'060"
+E0180D001'000"
+E0180D000'001"
 ```
 
 Вывод на `stdout` (если необходимо)
@@ -169,40 +169,16 @@ COORDS (13, 0): ' E 0180.        '
 COORDS (14, 0): 'E0180.00'
 syntax error (14, 8)
 syntax error (15, 0)
-COORDS (17, 0): ' '
-syntax error (17, 1)
-COORDS (17, 2): ' '
-syntax error (17, 3)
-COORDS (17, 16): '      '
-COORDS (18, 0): ' '
-syntax error (18, 1)
-COORDS (18, 2): ' '
-syntax error (18, 3)
-COORDS (18, 16): '     '
-COORDS (19, 0): ' '
-syntax error (19, 1)
-COORDS (19, 2): ' '
-syntax error (19, 3)
-COORDS (19, 16): '     '
+COORDS (17, 0): ' S 0000  D  000  \'  000  "      '
+COORDS (18, 0): ' S 0089  D  059  \'  059  "   '
+COORDS (19, 0): ' S 0090  D  000  \'  000  "   '
 syntax error (20, 0)
 syntax error (21, 0)
 syntax error (22, 0)
 syntax error (23, 0)
-COORDS (25, 0): ' '
-syntax error (25, 1)
-COORDS (25, 2): ' '
-syntax error (25, 3)
-COORDS (25, 16): '      '
-COORDS (26, 0): ' '
-syntax error (26, 1)
-COORDS (26, 2): ' '
-syntax error (26, 3)
-COORDS (26, 16): '     '
-COORDS (27, 0): ' '
-syntax error (27, 1)
-COORDS (27, 2): ' '
-syntax error (27, 3)
-COORDS (27, 16): '     '
+COORDS (25, 0): ' E 0000  D  000  \'  000  "    '
+COORDS (26, 0): ' E 0089  D  059  \'  059  "   '
+COORDS (27, 0): ' E 0180  D  000  \'  000  "   '
 syntax error (28, 0)
 syntax error (29, 0)
 syntax error (30, 0)

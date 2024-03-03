@@ -1,11 +1,17 @@
+#pragma once
+
 #include <string>
 
-#include "DomainTag.cpp"
 #include "Fragment.cpp"
 
 namespace Compiler {
 
 struct Token {
+    enum class DomainTag {
+        IDENT,
+        KEYWORD,
+    };
+
     DomainTag Tag;
     Fragment Coords;
 

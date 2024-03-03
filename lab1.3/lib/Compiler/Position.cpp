@@ -1,4 +1,6 @@
-#include <cstdlib>
+#pragma once
+
+#include <string>
 
 namespace Compiler {
 

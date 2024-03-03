@@ -1,20 +1,22 @@
+#pragma once
+
+#include <istream>
 #include <string>
-#include <sstream>
 #include <vector>
 
+#include "CompilerAbstract.cpp"
 #include "Token.cpp"
 
 namespace Compiler {
 
-class Compiler;
-
 class Scanner {
 public:
-    Scanner(std::istream& stream, Compiler& compiler)
+    Scanner(std::istream& stream, CompilerAbstract& compiler)
     : _stream(stream),
       _compiler(compiler) {};
 
     auto nextToken() -> const Token& {
+        _compiler.Messages;
         return TokenIdent{};
     };
 
@@ -23,7 +25,7 @@ public:
 
 private:
     std::istream& _stream;
-    Compiler& _compiler;
+    CompilerAbstract& _compiler;
 };
 
 }  // namespace Compiler

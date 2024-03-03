@@ -9,6 +9,8 @@ auto main() -> int {
     Compiler::Compiler compiler{};
     auto scanner = compiler.GetScanner(fileStream);
 
+    
+
     fileStream.close();
     return 0;
 }

@@ -8,6 +8,7 @@ namespace Compiler {
 
 struct Token {
     enum class DomainTag {
+        NIL,
         IDENT,
         KEYWORD,
     };
@@ -20,7 +21,7 @@ struct Token {
 };
 
 struct TokenIdent : Token {
-    std::string Ident;
+    std::size_t IdentCode;
 
 };
 

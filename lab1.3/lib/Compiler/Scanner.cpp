@@ -16,7 +16,34 @@ public:
       _compiler(compiler) {};
 
     auto nextToken() -> const Token& {
-        _compiler.Messages;
+
+        while (isspace(_stream.peek()) && !_stream.eof()) {
+            if (_stream.get() == '\n') {
+                ++actualPos.Line;
+                actualPos.Pos = 1;
+
+                // комментарий
+                if (_stream.peek() == '*') {
+                    Position commentStarts = actualPos;
+
+                    while (_stream.get() != '\n' || _stream.eof()) {
+                        ++actualPos.Pos;
+                    }
+                    ++actualPos.Line;
+                    actualPos.Pos = 1;
+
+                    Comments.push_back({commentStarts, actualPos});
+                }
+            } else {
+                ++actualPos.Pos;
+            }
+        }
+        if (_stream.eof()) {
+            return {Token::DomainTag::NIL};
+        }
+
+        
+
         return TokenIdent{};
     };
 
@@ -26,6 +53,8 @@ public:
 private:
     std::istream& _stream;
     CompilerAbstract& _compiler;
+
+    Position actualPos{1, 1, 0};
 };
 
 }  // namespace Compiler

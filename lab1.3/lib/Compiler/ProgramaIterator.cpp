@@ -25,9 +25,7 @@ public:
     }
 
     auto eof() const -> char {
-        return
-            _position.Index == _programa.size() &&
-            _stream.eof();
+        return _stream.eof();
     }
 
     auto next() -> void {

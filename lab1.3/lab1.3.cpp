@@ -10,6 +10,7 @@ auto main() -> int {
     Compiler::Compiler compiler{};
     auto scanner = compiler.GetScanner(fileStream);
 
+    std::cout << "TOKENS:\n";
     std::unique_ptr<Compiler::Token> nextToken = scanner.nextToken();
     while (nextToken != nullptr) {
         std::cout << '\t';
@@ -55,7 +56,7 @@ auto main() -> int {
             << '\n';
     }
 
-    std::cout << "PROGRAM:\n" << scanner.Program << "\nTOKENS:\n";
+    std::cout << "PROGRAM:\n" << scanner.Program << '\n';
 
     fileStream.close();
     return 0;

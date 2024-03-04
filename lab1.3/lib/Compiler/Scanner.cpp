@@ -23,6 +23,7 @@ public:
         while (!_programa.eof() && isspace(_programa.cur())) {
             _programa.next();
         }
+        // конец файла
         if (_programa.eof()) {
             return nullptr;
         }
@@ -55,7 +56,7 @@ public:
             token->Coords.Strarting = token->Coords.Ending = _programa.pos();
         }
 
-        while (!_programa.eof() && !tokens.empty()) {
+        while (!tokens.empty()) {
 
             // сохранение возможных вариантов
             for (const auto& token : tokens) {
@@ -74,6 +75,11 @@ public:
                 if (!(*it)->canBePrefix()) {
                     tokens.erase((it + 1).base());
                 }
+            }
+
+            // конец файла
+            if (_programa.eof()) {
+                break;
             }
 
             // довавление всем токенам следующего символа программы

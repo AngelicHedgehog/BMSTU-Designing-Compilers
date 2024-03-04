@@ -8,14 +8,14 @@ namespace Compiler {
 
 struct TokenKeyword final : Token {
     enum DomainKeyword {
-        WITH,
-        END,
-        STAR_PAIR,
+        WHERE,
+        ARROW,
+        DOUBLE_ARROW,
     };
     DomainKeyword Keyword;
 
     auto isFinished() const -> bool override {
-        return str == "with" || str == "end" || str == "**";
+        return str == "where" || str == "->" || str == "=>";
     }
 
     auto canBePrefix() const -> bool override {
@@ -23,13 +23,15 @@ struct TokenKeyword final : Token {
         case 0:
             return true;
         case 1:
-            return str == "w" || str == "e" || str == "*";
+            return str == "w" || str == "-" || str == "=";
         case 2:
-            return str == "wi" || str == "en" || str == "**";
+            return str == "wh" || str == "->" || str == "=>";
         case 3:
-            return str == "wit" || str == "end";
+            return str == "whe";
         case 4:
-            return str == "with";
+            return str == "wher";
+        case 5:
+            return str == "where";
         default:
             return false;
         }

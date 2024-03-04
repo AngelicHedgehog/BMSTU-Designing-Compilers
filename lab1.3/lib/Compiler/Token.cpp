@@ -11,7 +11,9 @@ struct Token {
     enum DomainTag {
         NIL,
         IDENT,
+        OPERATOR,
         KEYWORD,
+        INTEGER,
     };
     DomainTag Tag = NIL;
 

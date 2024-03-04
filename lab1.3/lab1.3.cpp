@@ -19,8 +19,16 @@ auto main() -> int {
             std::cout << "IDENT";
             break;
         
+        case Compiler::Token::OPERATOR:
+            std::cout << "OPERATOR";
+            break;
+
         case Compiler::Token::KEYWORD:
             std::cout << "KEYWORD";
+            break;
+
+        case Compiler::Token::INTEGER:
+            std::cout << "INTEGER";
             break;
         }
         std::cout
@@ -55,8 +63,6 @@ auto main() -> int {
             << message.Text
             << '\n';
     }
-
-    std::cout << "PROGRAM:\n" << scanner.Program << '\n';
 
     fileStream.close();
     return 0;

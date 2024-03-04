@@ -15,8 +15,16 @@ public:
       _stream(stream) {
         _programa += _stream.get();
       }
+    
+    auto resetProgramaBuffer() -> void {
+        _programa.erase(
+            std::begin(_programa),
+            std::next(std::begin(_programa), _position.Index)
+        );
+        _position.Index = 0;
+    }
 
-    auto pos() const -> Position {
+    auto pos() -> Position& {
         return _position;
     }
 

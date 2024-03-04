@@ -7,7 +7,9 @@
 
 #include "CompilerAbstract.cpp"
 #include "TokenIdent.cpp"
+#include "TokenOperator.cpp"
 #include "TokenKeyword.cpp"
+#include "TokenInteger.cpp"
 #include "ProgramaIterator.cpp"
 
 namespace Compiler {
@@ -23,23 +25,60 @@ public:
         while (!_programa.eof() && isspace(_programa.cur())) {
             _programa.next();
         }
+
+        // случай обнаружения однострочного комментария
+        if (!_programa.eof() && _programa.cur() == '-') {
+            _programa.next();
+            if (_programa.cur() == '-') {
+                _programa.prev();
+                Position commentStarts = _programa.pos();
+
+                while (!_programa.eof() && _programa.cur() != '\n') {
+                    _programa.next();
+                }
+                if (!_programa.eof()) {
+                    _programa.next();
+                }
+
+                Comments.push_back({commentStarts, _programa.pos()});
+                return nextToken();
+            } else {
+                _programa.prev();
+            }
+        }
+
+        // случай обнаружения многострочного комментария
+        if (!_programa.eof() && _programa.cur() == '{') {
+            _programa.next();
+            if (_programa.cur() == '-') {
+                _programa.prev();
+                Position commentStarts = _programa.pos();
+                _programa.next();
+
+                while (!_programa.eof()) {
+                    if (_programa.cur() == '-') {
+                        _programa.next();
+                        if (_programa.cur() == '}') {
+                            break;
+                        }
+                        _programa.prev();
+                    }
+                    _programa.next();
+                }
+                if (!_programa.eof()) {
+                    _programa.next();
+                }
+
+                Comments.push_back({commentStarts, _programa.pos()});
+                return nextToken();
+            } else {
+                _programa.prev();
+            }
+        }
+
         // конец файла
         if (_programa.eof()) {
             return nullptr;
-        }
-        // случай обнаружения знака комментария
-        if (_programa.pos().Pos == 1 && _programa.cur() == '*') {
-            Position commentStarts = _programa.pos();
-
-            while (!_programa.eof() && _programa.cur() != '\n') {
-                _programa.next();
-            }
-            if (!_programa.eof()) {
-                _programa.next();
-            }
-
-            Comments.push_back({commentStarts, _programa.pos()});
-            return nextToken();
         }
 
         // ищем максимально длинный префикс программы, описывающий некоторый токен
@@ -50,8 +89,12 @@ public:
         std::vector<std::unique_ptr<Token>> tokens{};
         tokens.push_back(std::make_unique<TokenIdent>());
         tokens.back()->Tag = Token::DomainTag::IDENT;
+        tokens.push_back(std::make_unique<TokenOperator>());
+        tokens.back()->Tag = Token::DomainTag::OPERATOR;
         tokens.push_back(std::make_unique<TokenKeyword>());
         tokens.back()->Tag = Token::DomainTag::KEYWORD;
+        tokens.push_back(std::make_unique<TokenInteger>());
+        tokens.back()->Tag = Token::DomainTag::INTEGER;
         for (auto& token : tokens) {
             token->Coords.Strarting = token->Coords.Ending = _programa.pos();
         }
@@ -92,6 +135,8 @@ public:
         // возвращение из лукапа за последний валидный токен
         _programa.prev(_programa.pos().Index - finishToken.Coords.Ending.Index);
 
+        _programa.resetProgramaBuffer();
+
         // вычисление внутренних аттрибутов
         switch (finishToken.Tag) {
         case Token::DomainTag::NIL: {
@@ -129,20 +174,35 @@ public:
             ident->IdentCode = _compiler.Names.AddName(ident->str);
             return ident;
         
+        } case Token::DomainTag::OPERATOR: {
+            auto operat = std::make_unique<TokenOperator>();
+            operat->Coords = finishToken.Coords;
+            operat->Tag = finishToken.Tag;
+            operat->str = finishToken.str;
+            return operat;
+
         } case Token::DomainTag::KEYWORD: {
             auto keyword = std::make_unique<TokenKeyword>();
             keyword->Coords = finishToken.Coords;
             keyword->Tag = finishToken.Tag;
             keyword->str = finishToken.str;
 
-            if (keyword->str == "with") {
-                keyword->Keyword = TokenKeyword::WITH;
-            } else if (keyword->str == "end") {
-                keyword->Keyword = TokenKeyword::END;
-            } else if (keyword->str == "**") {
-                keyword->Keyword = TokenKeyword::STAR_PAIR;
+            if (keyword->str == "where") {
+                keyword->Keyword = TokenKeyword::WHERE;
+            } else if (keyword->str == "->") {
+                keyword->Keyword = TokenKeyword::ARROW;
+            } else if (keyword->str == "=>") {
+                keyword->Keyword = TokenKeyword::DOUBLE_ARROW;
             }
             return keyword;
+
+        } case Token::DomainTag::INTEGER: {
+            auto integer = std::make_unique<TokenInteger>();
+            integer->Coords = finishToken.Coords;
+            integer->Tag = finishToken.Tag;
+            integer->str = finishToken.str;
+            integer->Value = std::stoi(integer->str);
+            return integer;
 
         } default: {
             return nullptr;

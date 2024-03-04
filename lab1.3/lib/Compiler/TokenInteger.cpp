@@ -6,19 +6,16 @@
 
 namespace Compiler {
 
-struct TokenIdent final : Token {
-    std::size_t IdentCode{};
+struct TokenInteger final : Token {
+    std::size_t Value;
 
     auto isFinished() const -> bool override {
-        return str.size() > 0 && canBePrefix();
+        return canBePrefix() && str.size() > 0;
     }
 
     auto canBePrefix() const -> bool override {
-        if (str.size() > 0 && !isalpha(str.at(0))) {
-            return false;
-        }
-        for (char chr : str) {
-            if (!isalpha(chr) && !isdigit(chr)) {
+        for (char digit : str) {
+            if (!isdigit(digit)) {
                 return false;
             }
         }

@@ -14,9 +14,8 @@ namespace Compiler {
 
 class Scanner {
 public:
-    Scanner(std::string_view string, CompilerAbstract& compiler)
-    : Program(string),
-      _programa(string),
+    Scanner(std::istream& stream, CompilerAbstract& compiler)
+    : _programa(Program, stream),
       _compiler(compiler) {};
 
     auto nextToken() -> std::unique_ptr<Token> {

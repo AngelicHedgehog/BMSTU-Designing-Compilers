@@ -10,8 +10,11 @@ namespace Compiler {
 
 class ProgramaIterator {
 public:
-    ProgramaIterator(std::string_view programa)
-    : _programa(programa) {}
+    ProgramaIterator(std::string& programa, std::istream& stream)
+    : _programa(programa),
+      _stream(stream) {
+        _programa += _stream.get();
+      }
 
     auto pos() const -> Position {
         return _position;
@@ -22,7 +25,9 @@ public:
     }
 
     auto eof() const -> char {
-        return _position.Index == _programa.size();
+        return
+            _position.Index == _programa.size() &&
+            _stream.eof();
     }
 
     auto next() -> void {
@@ -36,6 +41,10 @@ public:
             ++_position.Pos;
         }
         ++_position.Index;
+
+        if (_position.Index == _programa.size()) {
+            _programa += _stream.get();
+        }
     }
 
     auto next(std::size_t n) -> void {
@@ -64,7 +73,8 @@ public:
 
 private:
     std::unordered_map<std::size_t, std::size_t> _linesLens;
-    std::string _programa;
+    std::string& _programa;
+    std::istream& _stream;
     Position _position;
 };
 

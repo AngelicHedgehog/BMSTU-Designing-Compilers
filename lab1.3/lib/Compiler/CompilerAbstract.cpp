@@ -9,7 +9,7 @@ class Scanner;
 
 class CompilerAbstract {
 public:
-    virtual auto GetScanner(std::string_view string) -> Scanner = 0;
+    virtual auto GetScanner(std::istream& stream) -> Scanner = 0;
 
     MessageList Messages;
     NameDictionary Names;

@@ -8,12 +8,7 @@ auto main() -> int {
     std::ifstream fileStream{"prog.txt"};
 
     Compiler::Compiler compiler{};
-    auto scanner = compiler.GetScanner(
-        std::string((std::istreambuf_iterator<char>(fileStream)),
-                     std::istreambuf_iterator<char>()) + '\n'
-    );
-
-    std::cout << "PROGRAM:\n" << scanner.Program << "\nTOKENS:\n";
+    auto scanner = compiler.GetScanner(fileStream);
 
     std::unique_ptr<Compiler::Token> nextToken = scanner.nextToken();
     while (nextToken != nullptr) {
@@ -59,6 +54,8 @@ auto main() -> int {
             << message.Text
             << '\n';
     }
+
+    std::cout << "PROGRAM:\n" << scanner.Program << "\nTOKENS:\n";
 
     fileStream.close();
     return 0;

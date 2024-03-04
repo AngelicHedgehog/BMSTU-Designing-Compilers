@@ -18,7 +18,7 @@ public:
         _addMessage(false, coord, text);
     }
 
-    auto GetSorted() const -> std::set<Message> {
+    auto GetSorted() -> std::set<Message>& {
         return _messages;
     }
 

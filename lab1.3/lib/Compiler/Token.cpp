@@ -7,32 +7,19 @@
 namespace Compiler {
 
 struct Token {
-    enum class DomainTag {
+    Fragment Coords;
+    enum DomainTag {
         NIL,
         IDENT,
         KEYWORD,
     };
+    DomainTag Tag = NIL;
 
-    DomainTag Tag;
-    Fragment Coords;
+    std::string str;
 
-    bool isFinished;
-    bool canBePrefix;
-};
-
-struct TokenIdent : Token {
-    std::size_t IdentCode;
-
-};
-
-struct TokenKeyword : Token {
-    enum DomainKeyword {
-        WITH,
-        END,
-        STAR_PAIR,
-    };
-
-    DomainKeyword Keyword;
+    virtual auto isFinished() const -> bool {return false;};
+    virtual auto canBePrefix() const -> bool {return false;};
+    virtual ~Token() {};
 };
 
 }  // namespace Compiler

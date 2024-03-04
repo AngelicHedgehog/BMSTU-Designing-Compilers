@@ -24,7 +24,7 @@ public:
         _position.Index = 0;
     }
 
-    auto pos() -> Position& {
+    auto pos() const -> const Position& {
         return _position;
     }
 

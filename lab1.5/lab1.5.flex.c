@@ -54,6 +54,7 @@ typedef union Token YYSTYPE;
 
 int continued;
 struct Position cur;
+struct ErrorList errorList;
 
 #define YY_USER_ACTION {                \
     int i;                              \
@@ -75,20 +76,32 @@ struct Position cur;
     yylloc->following = cur;            \
 }
 
+struct Error {
+    struct Position pos;
+    char *msg;
+};
+
+struct ErrorList {
+    struct Error *array;
+    size_t length;
+};
 
 void init_scanner(char *program) {
     continued = 0;
     cur.line = 1;
     cur.pos = 1;
     cur.index = 0;
+    errorList.array = (struct Error*)malloc(0);
+    errorList.length = 0;
     yy_scan_string(program);
 }
 
 void err (char *msg) {
-    /* Бандитизм : ошибки нужно класть в список ошибок . */
-    printf("Error ");
-    print_pos(&cur);
-    printf(": %s\n", msg);
+    errorList.length++;
+    errorList.array = (struct Error*)realloc(
+        errorList.array, errorList.length * sizeof(struct Error*));
+    errorList.array[errorList.length - 1].pos = cur;
+    errorList.array[errorList.length - 1].msg = msg;
 }
 %}
 
@@ -184,56 +197,33 @@ int main () {
 
     init_scanner(PROGRAM);
 
+    printf("IDENTS:\n");
     do {
         tag = yylex(&value, &coords);
+        printf("\t");
+        print_frag(&coords);
+        printf(" %s", tag_names[tag]);
         switch (tag) {
-
             case TAG_IDENT:
-                print_frag(&coords);
-                printf(" IDENT %s\n", value.ident);
+                printf(" %s", value.ident);
                 break;
-
             case TAG_NUMBER:
-                print_frag(&coords);
-                printf(" NUMBER %li\n", value.num);
+                printf(" %li", value.num);
                 break;
-
             case TAG_CHAR:
-                print_frag(&coords);
-                printf(" CHAR %i\n", value.ch);
-                break;
-
-            case TAG_LPAREN:
-                print_frag(&coords);
-                printf(" LPAREN\n");
-                break;
-            
-            case TAG_RPAREN:
-                print_frag(&coords);
-                printf(" RPAREN\n");
-                break;
-            
-            case TAG_PLUS:
-                print_frag(&coords);
-                printf(" PLUS\n");
-                break;
-            
-            case TAG_MINUS:
-                print_frag(&coords);
-                printf(" MINUS\n");
-                break;
-            
-            case TAG_MULTIPLY:
-                print_frag(&coords);
-                printf(" MULTIPLY\n");
-                break;
-            
-            case TAG_DIVIDE:
-                print_frag(&coords);
-                printf(" DIVIDE\n");
+                printf(" %i", value.ch);
                 break;
         }
+        printf("\n");
     } while (tag != 0);
+
+    size_t i;
+    printf("ERRORS:\n");
+    for (i = 0; i < errorList.length; ++i) {
+        printf("\tError ");
+        print_pos(&errorList.array[i].pos);
+        printf(": %s\n", errorList.array[i].msg);
+    }
 
     return 0;
 }

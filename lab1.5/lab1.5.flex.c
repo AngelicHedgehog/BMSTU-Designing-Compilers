@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 enum TAGS {
     TAG_IDENT = 1,
@@ -131,9 +132,14 @@ NUMBER      {DIGIT}+
                                         return TAG_IDENT;
                                     }
 {NUMBER}                            {
-                                        /* Бандитизм: нет проверки на переполнение. */
-                                        yylval->num = atoi(yytext);
-                                        return TAG_NUMBER;
+                                        long long num = atoi(yytext);
+                                        if (strlen(yytext) > 10 || num >= LONG_MAX || num < 0) {
+                                            err("number length overflow");
+                                            BEGIN(0);
+                                        } else {
+                                            yylval->num = num;
+                                            return TAG_NUMBER;
+                                        }
                                     }
 \’                                  BEGIN(CHAR_1); continued = 1;
 
@@ -153,7 +159,7 @@ NUMBER      {DIGIT}+
                                         yylval->ch = 0;
                                         BEGIN(CHAR_2);
                                         continued = 1;
-}
+                                    }
 <CHAR_1>\’                          {
                                         err("empty character literal");
                                         BEGIN(0);
@@ -168,7 +174,7 @@ NUMBER      {DIGIT}+
 
 #define PROGRAM "\
 /* Expression */ (alpha + ’beta’ - ’\\n’)\n\
-* 666666666 /* blah-blah-blah\
+* 1234567890 /* blah-blah-blah\
 "
 
 int main () {

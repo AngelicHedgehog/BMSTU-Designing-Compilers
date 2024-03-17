@@ -55,6 +55,7 @@ typedef union Token YYSTYPE;
 int continued;
 struct Position cur;
 struct ErrorList errorList;
+struct CommentList commentList;
 
 #define YY_USER_ACTION {                \
     int i;                              \
@@ -86,6 +87,15 @@ struct ErrorList {
     size_t length;
 };
 
+struct Comment {
+    struct Fragment frag;
+};
+
+struct CommentList {
+    struct Comment *array;
+    size_t length;
+};
+
 void init_scanner(char *program) {
     continued = 0;
     cur.line = 1;
@@ -93,15 +103,24 @@ void init_scanner(char *program) {
     cur.index = 0;
     errorList.array = (struct Error*)malloc(0);
     errorList.length = 0;
+    commentList.array = (struct Comment*)malloc(0);
+    commentList.length = 0;
     yy_scan_string(program);
 }
 
-void err (char *msg) {
+void err(char *msg) {
     errorList.length++;
     errorList.array = (struct Error*)realloc(
         errorList.array, errorList.length * sizeof(struct Error*));
     errorList.array[errorList.length - 1].pos = cur;
     errorList.array[errorList.length - 1].msg = msg;
+}
+
+void comm(struct Fragment *frag) {
+    commentList.length++;
+    commentList.array = (struct Comment*)realloc(
+        commentList.array, commentList.length * sizeof(struct Comment*));
+    commentList.array[commentList.length - 1].frag = *frag;
 }
 %}
 
@@ -119,10 +138,7 @@ NUMBER      {DIGIT}+
 \/\*                                BEGIN(COMMENTS); continued = 1;
 <COMMENTS>[^*]*                     continued = 1;
 <COMMENTS>\*\/                      {
-                                        /* Бандитизм: координаты комментариев
-                                            нужно класть в список комментариев. */
-                                        print_frag(yylloc);
-                                        printf(" comment\n");
+                                        comm(yylloc);
                                         BEGIN(0);
                                     }
 <COMMENTS>\*                        continued = 1;
@@ -224,6 +240,15 @@ int main () {
         print_pos(&errorList.array[i].pos);
         printf(": %s\n", errorList.array[i].msg);
     }
+
+    printf("COMMENTS:\n");
+    for (i = 0; i < commentList.length; ++i) {
+        printf("\t");
+        print_frag(&commentList.array[i].frag);
+        printf(" comment\n");
+    }
+
+
 
     return 0;
 }

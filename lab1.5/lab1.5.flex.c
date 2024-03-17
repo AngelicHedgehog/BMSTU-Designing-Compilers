@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
 enum TAGS {
     TAG_IDENT = 1,
@@ -45,7 +46,7 @@ void print_frag(struct Fragment *f) {
 }
 
 union Token {
-    char *ident; /* Бандитизм: должно быть int code ; */
+    size_t code;
     long num;
     char ch;
 };
@@ -56,6 +57,7 @@ int continued;
 struct Position cur;
 struct ErrorList errorList;
 struct CommentList commentList;
+struct NameDict nameDict;
 
 #define YY_USER_ACTION {                \
     int i;                              \
@@ -96,22 +98,38 @@ struct CommentList {
     size_t length;
 };
 
+struct Name {
+    char *str;
+};
+
+struct NameDict {
+    struct Name *array;
+    size_t length;
+};
+
 void init_scanner(char *program) {
     continued = 0;
+    
     cur.line = 1;
     cur.pos = 1;
     cur.index = 0;
+
     errorList.array = (struct Error*)malloc(0);
     errorList.length = 0;
+    
     commentList.array = (struct Comment*)malloc(0);
     commentList.length = 0;
+    
+    nameDict.array = (struct Name*)malloc(0);
+    nameDict.length = 0;
+
     yy_scan_string(program);
 }
 
 void err(char *msg) {
     errorList.length++;
     errorList.array = (struct Error*)realloc(
-        errorList.array, errorList.length * sizeof(struct Error*));
+        errorList.array, errorList.length * sizeof(struct Error));
     errorList.array[errorList.length - 1].pos = cur;
     errorList.array[errorList.length - 1].msg = msg;
 }
@@ -119,9 +137,32 @@ void err(char *msg) {
 void comm(struct Fragment *frag) {
     commentList.length++;
     commentList.array = (struct Comment*)realloc(
-        commentList.array, commentList.length * sizeof(struct Comment*));
+        commentList.array, commentList.length * sizeof(struct Comment));
     commentList.array[commentList.length - 1].frag = *frag;
 }
+
+int containsName(char *name) {
+    size_t i;
+    for (i = 0; i != nameDict.length; ++i) {
+        if (strcmp(nameDict.array[i].str, name) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+size_t addName(char *name) {
+    nameDict.length++;
+    nameDict.array = (struct Name*)realloc(
+        nameDict.array, nameDict.length * sizeof(struct Name));
+
+    char **str = &nameDict.array[nameDict.length - 1].str;
+    *str = malloc(strlen(name)+1);
+    strcpy(*str, name);
+
+    return nameDict.length - 1;
+}
+
 %}
 
 LETTER      [a-zA-Z]
@@ -155,10 +196,13 @@ NUMBER      {DIGIT}+
 \/                                  return TAG_DIVIDE;
 
 {IDENT}                             {
-                                        /* Бандитизм: здесь нужно поместить
-                                            идентификатор в словарь имён. */
-                                        yylval->ident = yytext;
-                                        return TAG_IDENT;
+                                        if (containsName(yytext) == 1) {
+                                            err("this name alredy exists");
+                                            BEGIN(0);
+                                        } else {
+                                            yylval->code = addName(yytext);
+                                            return TAG_IDENT;
+                                        }
                                     }
 {NUMBER}                            {
                                         long long num = atoi(yytext);
@@ -202,7 +246,7 @@ NUMBER      {DIGIT}+
 %%
 
 #define PROGRAM "\
-/* Expression */ (alpha + ’beta’ - ’\\n’)\n\
+/* Expression */ (alpha * beta + alpha + ’beta’ - ’\\n’)\n\
 * 1234567890 /* blah-blah-blah\
 "
 
@@ -221,7 +265,7 @@ int main () {
         printf(" %s", tag_names[tag]);
         switch (tag) {
             case TAG_IDENT:
-                printf(" %s", value.ident);
+                printf(" %s", nameDict.array[value.code].str);
                 break;
             case TAG_NUMBER:
                 printf(" %li", value.num);
@@ -247,8 +291,6 @@ int main () {
         print_frag(&commentList.array[i].frag);
         printf(" comment\n");
     }
-
-
 
     return 0;
 }

@@ -60,20 +60,20 @@ struct CommentList commentList;
 struct NameDict nameDict;
 
 #define YY_USER_ACTION {                \
-    int i;                              \
+    size_t i;                           \
     if (!continued) {                   \
         yylloc->starting = cur;         \
     }                                   \
     continued = 0;                      \
                                         \
-    for (i = 0; i < yyleng ; i++) {     \
+    for (i = 0; i < yyleng ; ++i) {     \
         if (yytext[i] == '\n') {        \
-            cur.line++;                 \
+            ++cur.line;                 \
             cur.pos = 1;                \
         } else {                        \
-            cur.pos++;                  \
+            ++cur.pos;                  \
         }                               \
-        cur.index++;                    \
+        ++cur.index;                    \
     }                                   \
                                         \
     yylloc->following = cur;            \
@@ -114,20 +114,20 @@ void init_scanner(char *program) {
     cur.pos = 1;
     cur.index = 0;
 
-    errorList.array = (struct Error*)malloc(0);
+    errorList.array = NULL;
     errorList.length = 0;
     
-    commentList.array = (struct Comment*)malloc(0);
+    commentList.array = NULL;
     commentList.length = 0;
     
-    nameDict.array = (struct Name*)malloc(0);
+    nameDict.array = NULL;
     nameDict.length = 0;
 
     yy_scan_string(program);
 }
 
 void err(char *msg) {
-    errorList.length++;
+    ++errorList.length;
     errorList.array = (struct Error*)realloc(
         errorList.array, errorList.length * sizeof(struct Error));
     errorList.array[errorList.length - 1].pos = cur;
@@ -135,7 +135,7 @@ void err(char *msg) {
 }
 
 void comm(struct Fragment *frag) {
-    commentList.length++;
+    ++commentList.length;
     commentList.array = (struct Comment*)realloc(
         commentList.array, commentList.length * sizeof(struct Comment));
     commentList.array[commentList.length - 1].frag = *frag;
@@ -152,12 +152,12 @@ int containsName(char *name) {
 }
 
 size_t addName(char *name) {
-    nameDict.length++;
+    ++nameDict.length;
     nameDict.array = (struct Name*)realloc(
         nameDict.array, nameDict.length * sizeof(struct Name));
 
     char **str = &nameDict.array[nameDict.length - 1].str;
-    *str = malloc(strlen(name)+1);
+    *str = malloc(strlen(name) + 1);
     strcpy(*str, name);
 
     return nameDict.length - 1;
@@ -251,6 +251,7 @@ NUMBER      {DIGIT}+
 "
 
 int main () {
+    size_t i;
     int tag;
     YYSTYPE value;
     YYLTYPE coords;
@@ -277,16 +278,15 @@ int main () {
         printf("\n");
     } while (tag != 0);
 
-    size_t i;
     printf("ERRORS:\n");
-    for (i = 0; i < errorList.length; ++i) {
+    for (i = 0; i != errorList.length; ++i) {
         printf("\tError ");
         print_pos(&errorList.array[i].pos);
         printf(": %s\n", errorList.array[i].msg);
     }
 
     printf("COMMENTS:\n");
-    for (i = 0; i < commentList.length; ++i) {
+    for (i = 0; i != commentList.length; ++i) {
         printf("\t");
         print_frag(&commentList.array[i].frag);
         printf(" comment\n");

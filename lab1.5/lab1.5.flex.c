@@ -9,21 +9,15 @@
 
 enum TAGS {
     TAG_IDENT = 1,
-    TAG_NUMBER,
-    TAG_FLOAT,
-    TAG_CHAR,
-    TAG_LPAREN,
-    TAG_RPAREN,
-    TAG_PLUS,
-    TAG_MINUS,
-    TAG_MULTIPLY,
-    TAG_DIVIDE,
+    TAG_HEXNUMBER,
+    TAG_QEQ,
+    TAG_XX,
+    TAG_XXX,
 };
 
 char *tag_names[] = {
-    "END_OF_PROGRAM", "IDENT" , "NUMBER",
-    "FLOAT", "CHAR", "LPAREN", "RPAREN",
-    "PLUS", "MINUS" , "MULTIPLY", "DIVIDE"
+    "END_OF_PROGRAM", "IDENT", "HEXNUMBER",
+    "QEQ", "XX", "XXX",
 };
 
 struct Position {
@@ -48,9 +42,7 @@ void print_frag(struct Fragment *f) {
 
 union Token {
     size_t code;
-    unsigned long long num;
-    double real;
-    char ch;
+    unsigned long long hexnum;
 };
 
 typedef union Token YYSTYPE;
@@ -58,7 +50,6 @@ typedef union Token YYSTYPE;
 int continued;
 struct Position cur;
 struct ErrorList errorList;
-struct CommentList commentList;
 struct NameDict nameDict;
 
 #define YY_USER_ACTION {                \
@@ -102,27 +93,6 @@ void err(char *msg) {
     ++errorList.length;
     errorList.array[errorList.length - 1].pos = cur;
     errorList.array[errorList.length - 1].msg = msg;
-}
-
-struct Comment {
-    struct Fragment frag;
-};
-
-struct CommentList {
-    struct Comment *array;
-    size_t length;
-    size_t capacity;
-};
-
-void comm(struct Fragment *frag) {
-    if (commentList.length == commentList.capacity) {
-        commentList.capacity *= 2;
-        commentList.array = (struct Comment*)realloc(
-            commentList.array, commentList.capacity * sizeof(struct Comment));
-    }
-
-    ++commentList.length;
-    commentList.array[commentList.length - 1].frag = *frag;
 }
 
 struct Name {
@@ -171,10 +141,6 @@ void init_scanner(char *program) {
     errorList.length = 0;
     errorList.capacity = 0;
     
-    commentList.array = NULL;
-    commentList.length = 0;
-    commentList.capacity = 0;
-    
     nameDict.array = NULL;
     nameDict.length = 0;
     nameDict.capacity = 0;
@@ -186,34 +152,16 @@ void init_scanner(char *program) {
 
 LETTER      [a-zA-Z]
 DIGIT       [0-9]
-IDENT       {LETTER}({LETTER}|{DIGIT})*
-NUMBER      {DIGIT}+
-FLOAT       ({DIGIT}*\.{NUMBER}|{NUMBER}\.{DIGIT}*)([eE][+-]?{NUMBER})?
-
-%x          COMMENTS CHAR_1 CHAR_2
+HEXDIGIT    [a-hA-F0-9]
+IDENT       {LETTER}({DIGIT}*{LETTER})*
+HEXNUMBER   0{HEXDIGIT}*
 
 %%
 
 [\n\t ]+
-
-\/\*                                BEGIN(COMMENTS); continued = 1;
-<COMMENTS>[^*]*                     continued = 1;
-<COMMENTS>\*\/                      {
-                                        comm(yylloc);
-                                        BEGIN(0);
-                                    }
-<COMMENTS>\*                        continued = 1;
-<COMMENTS><<EOF>>                   {
-                                        err("end of program found, '*/' expected");
-                                        return 0;
-                                    }
-
-\(                                  return TAG_LPAREN;
-\)                                  return TAG_RPAREN;
-\+                                  return TAG_PLUS;
--                                   return TAG_MINUS;
-\*                                  return TAG_MULTIPLY;
-\/                                  return TAG_DIVIDE;
+qeq                                 return TAG_QEQ;
+xx                                  return TAG_XX;
+xxx                                 return TAG_XXX;
 
 {IDENT}                             {
                                         if (containsName(yytext) == 1) {
@@ -224,61 +172,22 @@ FLOAT       ({DIGIT}*\.{NUMBER}|{NUMBER}\.{DIGIT}*)([eE][+-]?{NUMBER})?
                                             return TAG_IDENT;
                                         }
                                     }
-{NUMBER}                            {
-                                        if ( strlen(yytext) < 20 ||
-                                            (strlen(yytext) == 20 &&
-                                                strcmp(yytext, "18446744073709551616") < 0))
+{HEXNUMBER}                         {
+                                        if ( strlen(yytext) < 17 )
                                         {
-                                            yylval->num = strtoull(yytext, NULL, 10);
-                                            return TAG_NUMBER;
+                                            yylval->hexnum = strtoull(yytext, NULL, 16);
+                                            return TAG_HEXNUMBER;
                                         } else {
                                             err("number length overflow");
                                             BEGIN(0);
                                         }
                                     }
-{FLOAT}                             {
-                                        /* Вандализм: нет проверки на переполнение */
-                                        /* А нет ее собственно потому, что
-                                            она весьма затратна в реализации */
-                                        yylval->real = strtod(yytext, NULL);
-                                        return TAG_FLOAT;
-                                    }
-\’                                  BEGIN(CHAR_1); continued = 1;
 
 .                                   err("unexpected character"); BEGIN(0);
 
-<CHAR_1,CHAR_2>\n                  {
-                                        err("newline in constant");
-                                        BEGIN(0);
-                                        yylval->ch = 0;
-                                        return TAG_CHAR;
-                                    }
-<CHAR_1>\\n                         yylval->ch = '\n'; BEGIN(CHAR_2); continued = 1;
-<CHAR_1>\\\’                        yylval->ch = '\''; BEGIN(CHAR_2); continued = 1;
-<CHAR_1>\\\\                        yylval->ch = '\\'; BEGIN(CHAR_2); continued = 1;
-<CHAR_1>\\.                         {
-                                        err("unrecognized Escape sequence");
-                                        yylval->ch = 0;
-                                        BEGIN(CHAR_2);
-                                        continued = 1;
-                                    }
-<CHAR_1>\’                          {
-                                        err("empty character literal");
-                                        BEGIN(0);
-                                        yylval->ch = 0;
-                                        return TAG_CHAR;
-                                    }
-<CHAR_1>.                           yylval->ch = yytext[0]; BEGIN(CHAR_2); continued = 1;
-<CHAR_2>\’                          BEGIN(0); return TAG_CHAR;
-<CHAR_2>[^\n\’]*                    err("too many characters in literal"); continued = 1;
-
 %%
 
-#define PROGRAM "\
-12.3456E-2\n\
-/* Expression */ (alpha * beta +я alpha + ’beta’ - ’\\n’)\n\
-* 1234567890 2147483648 /* blah-blah-blah\
-"
+#define PROGRAM "0fabc13 qeq  qe0e x xxx xx "
 
 int main () {
     size_t i;
@@ -298,14 +207,8 @@ int main () {
             case TAG_IDENT:
                 printf(" %s", nameDict.array[value.code].str);
                 break;
-            case TAG_NUMBER:
-                printf(" %llu", value.num);
-                break;
-            case TAG_FLOAT:
-                printf(" %f", value.real);
-                break;
-            case TAG_CHAR:
-                printf(" %i", value.ch);
+            case TAG_HEXNUMBER:
+                printf(" 0x%X", value.hexnum);
                 break;
         }
         printf("\n");
@@ -316,13 +219,6 @@ int main () {
         printf("\tError ");
         print_pos(&errorList.array[i].pos);
         printf(": %s\n", errorList.array[i].msg);
-    }
-
-    printf("COMMENTS:\n");
-    for (i = 0; i != commentList.length; ++i) {
-        printf("\t");
-        print_frag(&commentList.array[i].frag);
-        printf(" comment\n");
     }
 
     return 0;

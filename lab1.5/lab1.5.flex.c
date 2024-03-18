@@ -205,13 +205,14 @@ NUMBER      {DIGIT}+
                                         }
                                     }
 {NUMBER}                            {
-                                        long long num = atoi(yytext);
-                                        if (strlen(yytext) > 10 || num >= LONG_MAX || num < 0) {
+                                        if ( strlen(yytext) < 10 ||
+                                            (strlen(yytext) == 10 && strcmp(yytext, "2147483648") < 0))
+                                        {
+                                            yylval->num = atoi(yytext);
+                                            return TAG_NUMBER;
+                                        } else {
                                             err("number length overflow");
                                             BEGIN(0);
-                                        } else {
-                                            yylval->num = num;
-                                            return TAG_NUMBER;
                                         }
                                     }
 \’                                  BEGIN(CHAR_1); continued = 1;
@@ -247,7 +248,7 @@ NUMBER      {DIGIT}+
 
 #define PROGRAM "\
 /* Expression */ (alpha * beta + alpha + ’beta’ - ’\\n’)\n\
-* 1234567890 /* blah-blah-blah\
+* 1234567890 2147483648 /* blah-blah-blah\
 "
 
 int main () {

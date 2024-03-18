@@ -10,6 +10,7 @@
 enum TAGS {
     TAG_IDENT = 1,
     TAG_NUMBER,
+    TAG_FLOAT,
     TAG_CHAR,
     TAG_LPAREN,
     TAG_RPAREN,
@@ -21,8 +22,8 @@ enum TAGS {
 
 char *tag_names[] = {
     "END_OF_PROGRAM", "IDENT" , "NUMBER",
-    "CHAR", "LPAREN", "RPAREN", "PLUS",
-    "MINUS" , "MULTIPLY", "DIVIDE"
+    "FLOAT", "CHAR", "LPAREN", "RPAREN",
+    "PLUS", "MINUS" , "MULTIPLY", "DIVIDE"
 };
 
 struct Position {
@@ -47,7 +48,8 @@ void print_frag(struct Fragment *f) {
 
 union Token {
     size_t code;
-    long num;
+    unsigned long long num;
+    double real;
     char ch;
 };
 
@@ -186,6 +188,7 @@ LETTER      [a-zA-Z]
 DIGIT       [0-9]
 IDENT       {LETTER}({LETTER}|{DIGIT})*
 NUMBER      {DIGIT}+
+FLOAT       ({DIGIT}*\.{NUMBER}|{NUMBER}\.{DIGIT}*)([eE][+-]?{NUMBER})?
 
 %x          COMMENTS CHAR_1 CHAR_2
 
@@ -222,19 +225,25 @@ NUMBER      {DIGIT}+
                                         }
                                     }
 {NUMBER}                            {
-                                        if ( strlen(yytext) < 10 ||
-                                            (strlen(yytext) == 10 && strcmp(yytext, "2147483648") < 0))
+                                        if ( strlen(yytext) < 20 ||
+                                            (strlen(yytext) == 20 && strcmp(yytext, "18446744073709551616") < 0))
                                         {
-                                            yylval->num = atoi(yytext);
+                                            yylval->num = strtoull(yytext, NULL, 10);
                                             return TAG_NUMBER;
                                         } else {
                                             err("number length overflow");
                                             BEGIN(0);
                                         }
                                     }
+{FLOAT}                             {
+                                        /* Вандализм: нет проверки на переполнение */
+                                        /* А нет ее собственно потому, что она весьма затратна в реализации */
+                                        yylval->real = strtod(yytext, NULL);
+                                        return TAG_FLOAT;
+                                    }
 \’                                  BEGIN(CHAR_1); continued = 1;
 
-.                                   err("unexpected character");
+.                                   err("unexpected character"); BEGIN(0);
 
 <CHAR_1,CHAR_2>\n                  {
                                         err("newline in constant");
@@ -264,7 +273,8 @@ NUMBER      {DIGIT}+
 %%
 
 #define PROGRAM "\
-/* Expression */ (alpha * beta + alpha + ’beta’ - ’\\n’)\n\
+12.3456E-2\n\
+/* Expression */ (alpha * beta +я alpha + ’beta’ - ’\\n’)\n\
 * 1234567890 2147483648 /* blah-blah-blah\
 "
 
@@ -287,7 +297,10 @@ int main () {
                 printf(" %s", nameDict.array[value.code].str);
                 break;
             case TAG_NUMBER:
-                printf(" %li", value.num);
+                printf(" %llu", value.num);
+                break;
+            case TAG_FLOAT:
+                printf(" %f", value.real);
                 break;
             case TAG_CHAR:
                 printf(" %i", value.ch);

@@ -17,7 +17,7 @@ enum TAGS {
 
 char *tag_names[] = {
     "END_OF_PROGRAM", "IDENT", "HEXNUMBER",
-    "QEQ", "XX", "XXX",
+    "KEYWORD qeq", "KEYWORD xx", "KEYWORD xxx",
 };
 
 struct Position {
@@ -86,10 +86,8 @@ struct ErrorList {
 void err(char *msg) {
     if (errorList.length == errorList.capacity) {
         errorList.capacity *= 2;
-        struct Error* newArray = (struct Error*)realloc(
+        errorList.array = (struct Error*)realloc(
             errorList.array, errorList.capacity * sizeof(struct Error));
-        free(errorList.array);
-        errorList.array = newArray;
         
     }
 
@@ -121,10 +119,8 @@ int containsName(char *name) {
 size_t addName(char *name) {
     if (nameDict.length == nameDict.capacity) {
         nameDict.capacity *= 2;
-        struct Name* newArray = (struct Name*)realloc(
+        nameDict.array = (struct Name*)realloc(
             nameDict.array, nameDict.capacity * sizeof(struct Name));
-        free(nameDict.array);
-        nameDict.array = newArray;
     }
 
     ++nameDict.length;
@@ -135,7 +131,7 @@ size_t addName(char *name) {
     return nameDict.length - 1;
 }
 
-void init_scanner(char *program) {
+void init_scanner() {
     continued = 0;
     
     cur.line = 1;
@@ -149,8 +145,6 @@ void init_scanner(char *program) {
     nameDict.array = (struct Name*)malloc(sizeof(struct Name));
     nameDict.length = 0;
     nameDict.capacity = 1;
-
-    yy_scan_string(program);
 }
 
 %}
@@ -192,15 +186,16 @@ xxx                                 return TAG_XXX;
 
 %%
 
-#define PROGRAM "a"
-
-int main () {
+int main( int argc, char *argv[] ) {
     size_t i;
     int tag;
     YYSTYPE value;
     YYLTYPE coords;
 
-    init_scanner(PROGRAM);
+    if (argc > 1) {
+        yyin = fopen(argv[1], "r");
+    }
+    init_scanner();
 
     printf("IDENTS:\n");
     do {
@@ -231,8 +226,9 @@ int main () {
         free(nameDict.array[i].str);
     }
     free(nameDict.array);
-
-    // int* a = (int*)malloc(100 * sizeof(int));
+    if (argc > 1) {
+        fclose(yyin);
+    }
 
     return 0;
 }

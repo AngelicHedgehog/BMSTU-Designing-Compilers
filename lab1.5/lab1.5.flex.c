@@ -226,7 +226,8 @@ FLOAT       ({DIGIT}*\.{NUMBER}|{NUMBER}\.{DIGIT}*)([eE][+-]?{NUMBER})?
                                     }
 {NUMBER}                            {
                                         if ( strlen(yytext) < 20 ||
-                                            (strlen(yytext) == 20 && strcmp(yytext, "18446744073709551616") < 0))
+                                            (strlen(yytext) == 20 &&
+                                                strcmp(yytext, "18446744073709551616") < 0))
                                         {
                                             yylval->num = strtoull(yytext, NULL, 10);
                                             return TAG_NUMBER;
@@ -237,7 +238,8 @@ FLOAT       ({DIGIT}*\.{NUMBER}|{NUMBER}\.{DIGIT}*)([eE][+-]?{NUMBER})?
                                     }
 {FLOAT}                             {
                                         /* Вандализм: нет проверки на переполнение */
-                                        /* А нет ее собственно потому, что она весьма затратна в реализации */
+                                        /* А нет ее собственно потому, что
+                                            она весьма затратна в реализации */
                                         yylval->real = strtod(yytext, NULL);
                                         return TAG_FLOAT;
                                     }

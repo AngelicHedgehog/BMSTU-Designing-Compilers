@@ -86,8 +86,11 @@ struct ErrorList {
 void err(char *msg) {
     if (errorList.length == errorList.capacity) {
         errorList.capacity *= 2;
-        errorList.array = (struct Error*)realloc(
+        struct Error* newArray = (struct Error*)realloc(
             errorList.array, errorList.capacity * sizeof(struct Error));
+        free(errorList.array);
+        errorList.array = newArray;
+        
     }
 
     ++errorList.length;
@@ -118,13 +121,15 @@ int containsName(char *name) {
 size_t addName(char *name) {
     if (nameDict.length == nameDict.capacity) {
         nameDict.capacity *= 2;
-        nameDict.array = (struct Name*)realloc(
+        struct Name* newArray = (struct Name*)realloc(
             nameDict.array, nameDict.capacity * sizeof(struct Name));
+        free(nameDict.array);
+        nameDict.array = newArray;
     }
 
     ++nameDict.length;
     char **str = &nameDict.array[nameDict.length - 1].str;
-    *str = malloc(strlen(name) + 1);
+    *str = (char*)malloc((strlen(name) + 1) * sizeof(char));
     strcpy(*str, name);
 
     return nameDict.length - 1;
@@ -137,13 +142,13 @@ void init_scanner(char *program) {
     cur.pos = 1;
     cur.index = 0;
 
-    errorList.array = NULL;
+    errorList.array = (struct Error*)malloc(sizeof(struct Error));
     errorList.length = 0;
-    errorList.capacity = 0;
+    errorList.capacity = 1;
     
-    nameDict.array = NULL;
+    nameDict.array = (struct Name*)malloc(sizeof(struct Name));
     nameDict.length = 0;
-    nameDict.capacity = 0;
+    nameDict.capacity = 1;
 
     yy_scan_string(program);
 }
@@ -187,7 +192,7 @@ xxx                                 return TAG_XXX;
 
 %%
 
-#define PROGRAM "0fabc13 qeq  qe0e x xxx xx "
+#define PROGRAM "a"
 
 int main () {
     size_t i;
@@ -208,7 +213,7 @@ int main () {
                 printf(" %s", nameDict.array[value.code].str);
                 break;
             case TAG_HEXNUMBER:
-                printf(" 0x%X", value.hexnum);
+                printf(" 0x%llX", value.hexnum);
                 break;
         }
         printf("\n");
@@ -220,6 +225,14 @@ int main () {
         print_pos(&errorList.array[i].pos);
         printf(": %s\n", errorList.array[i].msg);
     }
+
+    free(errorList.array);
+    for (i = 0; i != nameDict.length; ++i) {
+        free(nameDict.array[i].str);
+    }
+    free(nameDict.array);
+
+    // int* a = (int*)malloc(100 * sizeof(int));
 
     return 0;
 }

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <stdint.h>
 
 enum TAGS {
     TAG_IDENT = 1,
@@ -106,14 +107,14 @@ struct NameDict {
     size_t capacity;
 };
 
-int containsName(char *name) {
+size_t getNameCode(char *name) {
     size_t i;
     for (i = 0; i != nameDict.length; ++i) {
         if (strcmp(nameDict.array[i].str, name) == 0) {
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return SIZE_MAX;
 }
 
 size_t addName(char *name) {
@@ -163,15 +164,17 @@ xx                                  return TAG_XX;
 xxx                                 return TAG_XXX;
 
 {IDENT}                             {
-                                        if (containsName(yytext) == 1) {
-                                            err("this name alredy exists");
-                                            BEGIN(0);
-                                        } else {
-                                            yylval->code = addName(yytext);
-                                            return TAG_IDENT;
+                                        size_t code;
+                                        if ( (code = getNameCode(yytext)) == SIZE_MAX ) {
+                                            code = addName(yytext);
                                         }
+                                        yylval->code = code;
+                                        return TAG_IDENT;
                                     }
 {HEXNUMBER}                         {
+                                        while ( strlen(yytext) >= 17 && *yytext == '0' ) {
+                                            ++yytext;
+                                        }
                                         if ( strlen(yytext) < 17 )
                                         {
                                             yylval->hexnum = strtoull(yytext, NULL, 16);

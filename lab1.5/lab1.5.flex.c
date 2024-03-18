@@ -87,7 +87,20 @@ struct Error {
 struct ErrorList {
     struct Error *array;
     size_t length;
+    size_t capacity;
 };
+
+void err(char *msg) {
+    if (errorList.length == errorList.capacity) {
+        errorList.capacity *= 2;
+        errorList.array = (struct Error*)realloc(
+            errorList.array, errorList.capacity * sizeof(struct Error));
+    }
+
+    ++errorList.length;
+    errorList.array[errorList.length - 1].pos = cur;
+    errorList.array[errorList.length - 1].msg = msg;
+}
 
 struct Comment {
     struct Fragment frag;
@@ -96,7 +109,19 @@ struct Comment {
 struct CommentList {
     struct Comment *array;
     size_t length;
+    size_t capacity;
 };
+
+void comm(struct Fragment *frag) {
+    if (commentList.length == commentList.capacity) {
+        commentList.capacity *= 2;
+        commentList.array = (struct Comment*)realloc(
+            commentList.array, commentList.capacity * sizeof(struct Comment));
+    }
+
+    ++commentList.length;
+    commentList.array[commentList.length - 1].frag = *frag;
+}
 
 struct Name {
     char *str;
@@ -105,41 +130,8 @@ struct Name {
 struct NameDict {
     struct Name *array;
     size_t length;
+    size_t capacity;
 };
-
-void init_scanner(char *program) {
-    continued = 0;
-    
-    cur.line = 1;
-    cur.pos = 1;
-    cur.index = 0;
-
-    errorList.array = NULL;
-    errorList.length = 0;
-    
-    commentList.array = NULL;
-    commentList.length = 0;
-    
-    nameDict.array = NULL;
-    nameDict.length = 0;
-
-    yy_scan_string(program);
-}
-
-void err(char *msg) {
-    ++errorList.length;
-    errorList.array = (struct Error*)realloc(
-        errorList.array, errorList.length * sizeof(struct Error));
-    errorList.array[errorList.length - 1].pos = cur;
-    errorList.array[errorList.length - 1].msg = msg;
-}
-
-void comm(struct Fragment *frag) {
-    ++commentList.length;
-    commentList.array = (struct Comment*)realloc(
-        commentList.array, commentList.length * sizeof(struct Comment));
-    commentList.array[commentList.length - 1].frag = *frag;
-}
 
 int containsName(char *name) {
     size_t i;
@@ -152,15 +144,40 @@ int containsName(char *name) {
 }
 
 size_t addName(char *name) {
-    ++nameDict.length;
-    nameDict.array = (struct Name*)realloc(
-        nameDict.array, nameDict.length * sizeof(struct Name));
+    if (nameDict.length == nameDict.capacity) {
+        nameDict.capacity *= 2;
+        nameDict.array = (struct Name*)realloc(
+            nameDict.array, nameDict.capacity * sizeof(struct Name));
+    }
 
+    ++nameDict.length;
     char **str = &nameDict.array[nameDict.length - 1].str;
     *str = malloc(strlen(name) + 1);
     strcpy(*str, name);
 
     return nameDict.length - 1;
+}
+
+void init_scanner(char *program) {
+    continued = 0;
+    
+    cur.line = 1;
+    cur.pos = 1;
+    cur.index = 0;
+
+    errorList.array = NULL;
+    errorList.length = 0;
+    errorList.capacity = 0;
+    
+    commentList.array = NULL;
+    commentList.length = 0;
+    commentList.capacity = 0;
+    
+    nameDict.array = NULL;
+    nameDict.length = 0;
+    nameDict.capacity = 0;
+
+    yy_scan_string(program);
 }
 
 %}

@@ -8,7 +8,7 @@ type
 const
   Heigh = 480;
   Width = 640;
-  Lines = 24
+  Lines = 24;
   Columns = 80;
 type
   BaseColor = (red, green, blue, highlited);
@@ -21,7 +21,12 @@ type
       BackColor : Color
     end;
 
+(* определения токенов }
+{ определения токенов *)
+(* определения токенов *)
 { определения токенов }
+{ определения токенов *)
+(* определения токенов }
 TYPE
   Domain = (Ident, IntNumber, RealNumber);
   Token = record

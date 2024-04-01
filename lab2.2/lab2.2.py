@@ -347,8 +347,8 @@ p = pe.Parser(NProgram)
 assert p.is_lalr_one()
 
 p.add_skipped_domain(r'\s')
-p.add_skipped_domain(r'(\(\*|\{).*?(\*\)|\})')
-
+p.add_skipped_domain(r'{[^}]*}')
+p.add_skipped_domain(r'\(\*([^*]|\*[^\)])*\*\)')
 
 for filename in sys.argv[1:]:
     try:

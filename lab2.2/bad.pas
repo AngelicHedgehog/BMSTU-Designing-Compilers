@@ -8,7 +8,7 @@ type
 const
   Heigh = 480;
   Width = 640;
-  Lines = 24;
+  Lines = 24
   Columns = 80;
 type
   BaseColor = (red, green, blue, highlited);

@@ -57,7 +57,7 @@ class EnumTypeIdentifier(enum.Enum):
 
 @dataclass
 class CommonTypeIdentifier(TypeIdentifier):
-    commonType : EnumTypeIdentifier
+    common_type_identifier : EnumTypeIdentifier
 
 @dataclass
 class IdentifierTypeIdentificator:
@@ -112,7 +112,7 @@ class IdentifierWithType:
 
 @dataclass
 class CaseVariant:
-    class FieldList(): ...
+    class FieldList: ...
 
     constant_list : tuple[Constant]
     field_list : FieldList

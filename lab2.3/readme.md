@@ -363,125 +363,125 @@ int main()
 Вывод на `stdout`
 
 ```
-Rules -> Rule Rules
-  Rule -> < Nterm < Altrule > Altrules >
+Rules -> Rule Rules 
+  Rule -> < Nterm < Altrule > Altrules > 
     < -> '<' (2, 1)-(2, 2)
     Nterm -> 'Nterm' (2, 2)-(2, 7) "axiom"
     < -> '<' (2, 8)-(2, 9)
-    Altrule -> Nterm Altrule
+    Altrule -> Nterm Altrule 
       Nterm -> 'Nterm' (2, 9)-(2, 10) "E"
-      Altrule -> ╬╡
-        ╬╡ -> '╬╡'
+      Altrule -> ε 
+        ε -> 'ε' 
     > -> '>' (2, 10)-(2, 11)
-    Altrules -> ╬╡
-      ╬╡ -> '╬╡'
+    Altrules -> ε 
+      ε -> 'ε' 
     > -> '>' (2, 11)-(2, 12)
-  Rules -> Rule Rules
-    Rule -> < Nterm < Altrule > Altrules >
+  Rules -> Rule Rules 
+    Rule -> < Nterm < Altrule > Altrules > 
       < -> '<' (4, 1)-(4, 2)
       Nterm -> 'Nterm' (4, 2)-(4, 3) "E"
       < -> '<' (4, 7)-(4, 8)
-      Altrule -> Nterm Altrule
+      Altrule -> Nterm Altrule 
         Nterm -> 'Nterm' (4, 8)-(4, 9) "T"
-        Altrule -> Nterm Altrule
+        Altrule -> Nterm Altrule 
           Nterm -> 'Nterm' (4, 10)-(4, 12) "E'"
-          Altrule -> ╬╡
-            ╬╡ -> '╬╡'
+          Altrule -> ε 
+            ε -> 'ε' 
       > -> '>' (4, 12)-(4, 13)
-      Altrules -> ╬╡
-        ╬╡ -> '╬╡'
+      Altrules -> ε 
+        ε -> 'ε' 
       > -> '>' (4, 13)-(4, 14)
-    Rules -> Rule Rules
-      Rule -> < Nterm < Altrule > Altrules >
+    Rules -> Rule Rules 
+      Rule -> < Nterm < Altrule > Altrules > 
         < -> '<' (5, 1)-(5, 2)
         Nterm -> 'Nterm' (5, 2)-(5, 4) "E'"
         < -> '<' (5, 10)-(5, 11)
-        Altrule -> Term Altrule
+        Altrule -> Term Altrule 
           Term -> 'Term' (5, 11)-(5, 12) "+"
-          Altrule -> Nterm Altrule
+          Altrule -> Nterm Altrule 
             Nterm -> 'Nterm' (5, 13)-(5, 14) "T"
-            Altrule -> Nterm Altrule
+            Altrule -> Nterm Altrule 
               Nterm -> 'Nterm' (5, 15)-(5, 17) "E'"
-              Altrule -> ╬╡
-                ╬╡ -> '╬╡'
+              Altrule -> ε 
+                ε -> 'ε' 
         > -> '>' (5, 17)-(5, 18)
-        Altrules -> < Altrule > Altrules
+        Altrules -> < Altrule > Altrules 
           < -> '<' (5, 19)-(5, 20)
-          Altrule -> ╬╡
-            ╬╡ -> '╬╡'
+          Altrule -> ε 
+            ε -> 'ε' 
           > -> '>' (5, 20)-(5, 21)
-          Altrules -> ╬╡
-            ╬╡ -> '╬╡'
+          Altrules -> ε 
+            ε -> 'ε' 
         > -> '>' (5, 21)-(5, 22)
-      Rules -> Rule Rules
-        Rule -> < Nterm < Altrule > Altrules >
+      Rules -> Rule Rules 
+        Rule -> < Nterm < Altrule > Altrules > 
           < -> '<' (6, 1)-(6, 2)
           Nterm -> 'Nterm' (6, 2)-(6, 3) "T"
           < -> '<' (6, 7)-(6, 8)
-          Altrule -> Nterm Altrule
+          Altrule -> Nterm Altrule 
             Nterm -> 'Nterm' (6, 8)-(6, 9) "F"
-            Altrule -> Nterm Altrule
+            Altrule -> Nterm Altrule 
               Nterm -> 'Nterm' (6, 10)-(6, 12) "T'"
-              Altrule -> ╬╡
-                ╬╡ -> '╬╡'
+              Altrule -> ε 
+                ε -> 'ε' 
           > -> '>' (6, 12)-(6, 13)
-          Altrules -> ╬╡
-            ╬╡ -> '╬╡'
+          Altrules -> ε 
+            ε -> 'ε' 
           > -> '>' (6, 13)-(6, 14)
-        Rules -> Rule Rules
-          Rule -> < Nterm < Altrule > Altrules >
+        Rules -> Rule Rules 
+          Rule -> < Nterm < Altrule > Altrules > 
             < -> '<' (7, 1)-(7, 2)
             Nterm -> 'Nterm' (7, 2)-(7, 4) "T'"
             < -> '<' (7, 7)-(7, 8)
-            Altrule -> Term Altrule
+            Altrule -> Term Altrule 
               Term -> 'Term' (7, 8)-(7, 9) "*"
-              Altrule -> Nterm Altrule
+              Altrule -> Nterm Altrule 
                 Nterm -> 'Nterm' (7, 10)-(7, 11) "F"
-                Altrule -> Nterm Altrule
+                Altrule -> Nterm Altrule 
                   Nterm -> 'Nterm' (7, 12)-(7, 14) "T'"
-                  Altrule -> ╬╡
-                    ╬╡ -> '╬╡'
+                  Altrule -> ε 
+                    ε -> 'ε' 
             > -> '>' (7, 14)-(7, 15)
-            Altrules -> < Altrule > Altrules
+            Altrules -> < Altrule > Altrules 
               < -> '<' (7, 16)-(7, 17)
-              Altrule -> ╬╡
-                ╬╡ -> '╬╡'
+              Altrule -> ε 
+                ε -> 'ε' 
               > -> '>' (7, 17)-(7, 18)
-              Altrules -> ╬╡
-                ╬╡ -> '╬╡'
+              Altrules -> ε 
+                ε -> 'ε' 
             > -> '>' (7, 18)-(7, 19)
-          Rules -> Rule Rules
-            Rule -> < Nterm < Altrule > Altrules >
+          Rules -> Rule Rules 
+            Rule -> < Nterm < Altrule > Altrules > 
               < -> '<' (8, 1)-(8, 2)
               Nterm -> 'Nterm' (8, 2)-(8, 3) "F"
               < -> '<' (8, 7)-(8, 8)
-              Altrule -> Nterm Altrule
+              Altrule -> Nterm Altrule 
                 Nterm -> 'Nterm' (8, 8)-(8, 9) "n"
-                Altrule -> ╬╡
-                  ╬╡ -> '╬╡'
+                Altrule -> ε 
+                  ε -> 'ε' 
               > -> '>' (8, 9)-(8, 10)
-              Altrules -> < Altrule > Altrules
+              Altrules -> < Altrule > Altrules 
                 < -> '<' (8, 11)-(8, 12)
-                Altrule -> Term Altrule
+                Altrule -> Term Altrule 
                   Term -> 'Term' (8, 12)-(8, 13) "("
-                  Altrule -> Nterm Altrule
+                  Altrule -> Nterm Altrule 
                     Nterm -> 'Nterm' (8, 14)-(8, 15) "E"
-                    Altrule -> Term Altrule
+                    Altrule -> Term Altrule 
                       Term -> 'Term' (8, 16)-(8, 17) ")"
-                      Altrule -> ╬╡
-                        ╬╡ -> '╬╡'
+                      Altrule -> ε 
+                        ε -> 'ε' 
                 > -> '>' (8, 17)-(8, 18)
-                Altrules -> ╬╡
-                  ╬╡ -> '╬╡'
+                Altrules -> ε 
+                  ε -> 'ε' 
               > -> '>' (8, 18)-(8, 19)
-            Rules -> ╬╡
-              ╬╡ -> '╬╡'
-$ -> '$'
+            Rules -> ε 
+              ε -> 'ε' 
+$ -> '$' 
 COMMENTS:
-        (1, 1)-(2, 1)
-        (3, 1)-(4, 1)
+	(1, 1)-(2, 1)
+	(3, 1)-(4, 1)
 MESSAGES:
-        ERROR (5, 5): Unexpected lexem '123', expected '<'.
+	ERROR (5, 5): Unexpected lexem '123', expected '<'.
 ```
 
 # Вывод

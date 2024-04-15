@@ -1,5 +1,4 @@
 #include <iostream>
-#include <istream>
 #include <fstream>
 #include <vector>
 #include <unordered_set>
@@ -8,88 +7,88 @@
 #include <string>
 #include <cassert>
 
+#include "lib/Compiler/Compiler.cpp"
 
-auto errorSym(char errorSym) -> void
+
+enum class TableLexemDomen
 {
-    std::cerr << "Error: unrecognized symbol '" << errorSym << "'.\n";
+    TERM,
+    NTERM,
+    OPEN_BRACKET,
+    CLOSE_BRACKET,
+    END_OF_FILE,
+};
+
+struct TabelLexem
+{
+    std::string str;
+    std::string domen;
+    Compiler::Fragment coord;
+};
+
+auto errorLexem(Compiler::MessageList& messageList, const TabelLexem& errorLex, std::string expected) -> void
+{
+    messageList.AddError(errorLex.coord.Strarting,
+        "Unexpected lexem '" + errorLex.str + "', expected '" + expected + "'.");
 }
 
-auto errorEarlyFinish() -> void
+auto errorEarlyFinish(Compiler::MessageList& messageList, const TabelLexem& errorLex) -> void
 {
-    std::cerr << "Error: text parsing was not completed.\n";
+    messageList.AddError(errorLex.coord.Strarting,
+        "Text parsing was not completed.");
 }
 
-auto errorUnrecognizedTail() -> void
+auto errorUnrecognizedTail(Compiler::MessageList& messageList, const TabelLexem& errorLex) -> void
 {
-    std::cerr << "Error: unreconized tail of text.\n";
+    messageList.AddError(errorLex.coord.Strarting,
+        "Unreconized tail of text.");
 }
 
-auto readNewChar(std::istream& inputChain) -> char
+auto readNewLexem(Compiler::Scanner& scanner) -> TabelLexem
 {
-    char alpha;
-    do
+    auto nextLexem = scanner.nextToken();
+    if (!nextLexem || nextLexem->Tag == Compiler::Token::DomainTag::NIL)
     {
-        alpha = inputChain.get();
-        if (alpha == EOF)
+        return {"$", "$", nextLexem ? nextLexem->Coords.Strarting : Compiler::Position{0, 0}};
+    }
+    if (nextLexem->Tag == Compiler::Token::DomainTag::TERM)
+    {
+        return {nextLexem->str, "Term", nextLexem->Coords.Strarting};
+    }
+    if (nextLexem->Tag == Compiler::Token::DomainTag::NTERM)
+    {
+        return {nextLexem->str, "Nterm", nextLexem->Coords.Strarting};
+    }
+    if (nextLexem->Tag == Compiler::Token::DomainTag::KEYWORD)
+    {
+        if (nextLexem->str == "<")
         {
-            return '$';
+            return {nextLexem->str, "<", nextLexem->Coords.Strarting};
         }
-    } while ((isspace(alpha) && alpha != '\n'));
-    return alpha;
+        else
+        {
+            return {nextLexem->str, ">", nextLexem->Coords.Strarting};
+        }        
+    }
+    return {"$", "$"};
 }
 
 auto TopDownParse(
     const std::unordered_set<std::string>& nonTerminals,
-    const std::unordered_set<char>& terminals,
     const std::string& startTerm,
-    const std::unordered_map<char, std::unordered_map<std::string, std::vector<std::string>>>& predictTable,
-    std::istream& inputChain
+    const std::unordered_map<std::string,
+                             std::unordered_map<std::string, std::vector<std::string>>>&
+                            predictTable,
+    Compiler::Scanner& scanner,
+    Compiler::MessageList& messageList
 ) -> std::vector<std::pair<std::string, std::vector<std::string>>>
 {
-    assert(terminals.contains('$'));
-    assert(
-        nonTerminals.contains(startTerm) ||
-        (
-            startTerm.size() == 1 &&
-            terminals.contains(startTerm.at(0))
-        )
-    );
-    assert(predictTable.size() == terminals.size());
-    for (const auto& terminal : terminals)
-    {
-        assert(predictTable.contains(terminal));
-        assert(predictTable.at(terminal).size() == nonTerminals.size());
-        for (const auto& nonTerminal : nonTerminals)
-        {
-            assert(predictTable.at(terminal).contains(nonTerminal));
-        }
-    }
-    for (const auto& [_, rules] : predictTable)
-    {
-        for (const auto& [_, rule] : rules)
-        {
-            for (const auto& term : rule)
-            {
-                assert(
-                    (
-                        term.size() == 1 &&
-                        terminals.contains(term.at(0))
-                    ) ||
-                    nonTerminals.contains(term) ||
-                    term == "ERROR" ||
-                    term == "ε"
-                );
-            }
-        }
-    }
-
-    // inputChain.unsetf(std::ios_base::skipws);
 
     std::vector<std::pair<std::string, std::vector<std::string>>> result{};
     std::stack<std::string> magazine{};
     magazine.push("$");
     magazine.push(startTerm);
-    char alpha = readNewChar(inputChain);
+    auto alpha = readNewLexem(scanner);
     std::string topSym;
 
     do
@@ -99,51 +98,53 @@ auto TopDownParse(
         {
             magazine.pop();
             topSym = magazine.top();
+            result.push_back({"ε", {"\"ε\""}});
         }
-        if (topSym.size() == 1 && terminals.contains(topSym.at(0)))
+        if (!nonTerminals.contains(topSym))
         {
-            if (topSym.at(0) == alpha)
+            if (topSym == alpha.domen)
             {
                 magazine.pop();
+                result.push_back({alpha.domen, {"\"" + alpha.str + "\""}});
             }
             else if (topSym == "$")
             {
-                errorUnrecognizedTail();
+                errorUnrecognizedTail(messageList, alpha);
                 break;
             }
-            else if (alpha == '$')
+            else if (alpha.domen == "$")
             {
                 std::cout << topSym << '\n';
-                errorEarlyFinish();
+                errorEarlyFinish(messageList, alpha);
                 break;
             }
             else
             {
-                errorSym(alpha);
+                errorLexem(messageList, alpha, topSym);
             }
-            alpha = readNewChar(inputChain);
+            alpha = readNewLexem(scanner);
         }
-        else if (predictTable.contains(alpha) && (
-                 predictTable.at(alpha).at(topSym).size() != 1 ||
-                 predictTable.at(alpha).at(topSym).at(0) != "ERROR"))
+        else if (predictTable.at(alpha.domen).at(topSym).size() != 1 ||
+                 predictTable.at(alpha.domen).at(topSym).at(0) != "ERROR")
         {
             magazine.pop();
-            const auto& rule = predictTable.at(alpha).at(topSym);
+            const auto& rule = predictTable.at(alpha.domen).at(topSym);
             for (auto it = rule.rbegin(); it != rule.rend(); ++it)
             {
                 magazine.push(*it);
             }
             result.push_back({topSym, rule});
         }
-        else if (alpha == '$')
+        else if (alpha.domen == "$")
         {
-            errorEarlyFinish();
+            std::cout << topSym << '\n';
+            errorEarlyFinish(messageList, alpha);
             break;
         }
         else
         {
-            errorSym(alpha);
-            alpha = readNewChar(inputChain);
+            errorLexem(messageList, alpha, topSym);
+            alpha = readNewLexem(scanner);
         }
     }
     while (topSym != "$");
@@ -157,124 +158,76 @@ int main()
         "Rules",
         "Rule",
         "Altrules",
-        "Altrule",
-        "Term",
-        "Nterm",
-        "Nterm'",
-        "Comment",
-        "Comment'"
+        "Altrule"
     };
-    std::unordered_set<char> terminals{};
     std::string startTerm = "Rules";
-    std::unordered_map<char,
+    std::unordered_map<std::string,
         std::unordered_map<std::string, std::vector<std::string>>>
         predictTable{};
     std::ifstream inputChain{"example.txt"};
     
-    terminals.insert('\'');
-    predictTable.insert({'\'', {
-        {"Rules", {"Comment", "Rules"}},
-        {"Rule", {"ERROR"}},
-        {"Altrules", {"ERROR"}},
-        {"Altrule", {"Term", "Altrule"}},
-        {"Term", {"'"}},
-        {"Nterm", {"ERROR"}},
-        {"Nterm'", {"'"}},
-        {"Comment", {"'", "Comment'", "\n"}},
-        {"Comment'", {"'", "Comment'"}}}});
-    terminals.insert('\n');
-    predictTable.insert({'\n', {
+    
+    predictTable.insert({"Nterm", {
         {"Rules", {"ERROR"}},
         {"Rule", {"ERROR"}},
         {"Altrules", {"ERROR"}},
-        {"Altrule", {"Term", "Altrule"}},
-        {"Term", {"\n"}},
-        {"Nterm", {"ERROR"}},
-        {"Nterm'", {"\n"}},
-        {"Comment", {"ERROR"}},
-        {"Comment'", {"ε"}}}});
-    for (auto sym : "+-*/()")
-    {
-        if (sym == '\0')
-        {
-            continue;
-        }
-        terminals.insert(sym);
-        predictTable.insert({sym, {
-            {"Rules", {"ERROR"}},
-            {"Rule", {"ERROR"}},
-            {"Altrules", {"ERROR"}},
-            {"Altrule", {"Term", "Altrule"}},
-            {"Term", {{sym}}},
-            {"Nterm", {"ERROR"}},
-            {"Nterm'", {{sym}, "Nterm'"}},
-            {"Comment", {"ERROR"}},
-            {"Comment'", {{sym}, "Comment'"}}}});
-    }
-    for (auto sym : "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\
-абвгдежзийклмнопрстуфхцчшщъыьэюяАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
-    {
-        if (sym == '\0')
-        {
-            continue;
-        }
-        terminals.insert(sym);
-        predictTable.insert({sym, {
-            {"Rules", {"ERROR"}},
-            {"Rule", {"ERROR"}},
-            {"Altrules", {"ERROR"}},
-            {"Altrule", {"Nterm", "Altrule"}},
-            {"Term", {"ERROR"}},
-            {"Nterm", {{sym}, "Nterm'"}},
-            {"Nterm'", {{sym}, "Nterm'"}},
-            {"Comment", {"ERROR"}},
-            {"Comment'", {{sym}, "Comment'"}}}});
-    }
-    terminals.insert('<');
-    predictTable.insert({'<', {
-        {"Rules", {"Rule", "Rules"}},
-        {"Rule", {"<", "Nterm", "<", "Altrule", ">", "Altrules", ">", "\n"}},
-        {"Altrules", {"<", "Altrule", ">", "Altrules"}},
-        {"Altrule", {"ERROR"}},
-        {"Term", {"ERROR"}},
-        {"Nterm", {"ε"}},
-        {"Nterm'", {"ε"}},
-        {"Comment", {"ERROR"}},
-        {"Comment'", {"<", "Comment'"}}}});
+        {"Altrule", {"Nterm", "Altrule"}}}});
 
-    terminals.insert('>');
-    predictTable.insert({'>', {
+    
+    predictTable.insert({"Term", {
+        {"Rules", {"ERROR"}},
+        {"Rule", {"ERROR"}},
+        {"Altrules", {"ERROR"}},
+        {"Altrule", {"Term", "Altrule"}}}});
+
+    predictTable.insert({"<", {
+        {"Rules", {"Rule", "Rules"}},
+        {"Rule", {"<", "Nterm", "<", "Altrule", ">", "Altrules", ">"}},
+        {"Altrules", {"<", "Altrule", ">", "Altrules"}},
+        {"Altrule", {"ERROR"}}}});
+
+    predictTable.insert({">", {
         {"Rules", {"ERROR"}},
         {"Rule", {"ERROR"}},
         {"Altrules", {"ε"}},
-        {"Altrule", {"ε"}},
-        {"Term", {"ERROR"}},
-        {"Nterm", {"ε"}},
-        {"Nterm'", {"ε"}},
-        {"Comment", {"ERROR"}},
-        {"Comment'", {">", "Comment'"}}}});
+        {"Altrule", {"ε"}}}});
 
-    terminals.insert('$');
-    predictTable.insert({'$', {
+    predictTable.insert({"$", {
         {"Rules", {"ε"}},
         {"Rule", {"ERROR"}},
         {"Altrules", {"ERROR"}},
-        {"Altrule", {"ERROR"}},
-        {"Term", {"ERROR"}},
-        {"Nterm", {"ERROR"}},
-        {"Nterm'", {"ERROR"}},
-        {"Comment", {"ERROR"}},
-        {"Comment'", {"ε"}}}});
+        {"Altrule", {"ERROR"}}}});
 
-    auto res = TopDownParse(nonTerminals, terminals, startTerm, predictTable, inputChain);
+    Compiler::Compiler compiler{};
+    auto scanner = compiler.GetScanner(inputChain);
+
+    auto res = TopDownParse(nonTerminals, startTerm, predictTable, scanner, compiler.Messages);
 
     std::stack<std::size_t> magazine{};
+
+
+    auto printMag = [&]()
+    {
+        std::vector<std::size_t> temp{};
+        while (!magazine.empty())
+        {
+            temp.push_back(magazine.top());
+            magazine.pop();
+        }
+        for (auto it = temp.rbegin(); it != temp.rend(); ++it)
+        {
+            std::cout << *it << ' ';
+            magazine.push(*it);
+        }
+        std::cout << '\n';
+    };
     for (const auto& [nonTerm, rule] : res)
     {
         while (!magazine.empty() && magazine.top() == 0)
         {
             magazine.pop();
         }
+        // printMag();
         for (std::size_t i = 0; i != magazine.size(); ++i)
         {
             std::cout << "  ";
@@ -294,17 +247,35 @@ int main()
         }
 
         std::size_t countNonTerms = 0;
-        for (const auto& nterm : rule)
+        if (nonTerminals.contains(nonTerm))
         {
-            if (nonTerminals.contains(nterm))
-            {
-                ++countNonTerms;
-            }
+            countNonTerms = rule.size();
         }
         if (countNonTerms != 0)
         {
             magazine.push(countNonTerms);
         }
+    }
+
+    std::cout << "COMMENTS:\n";
+    for (const auto& comment : scanner.Comments) {
+        std::cout
+            << '\t'
+            << comment.Strarting
+            << '-'
+            << comment.Ending
+            << '\n';
+    }
+
+    std::cout << "MESSAGES:\n";
+    for (const auto& message : compiler.Messages.GetSorted()) {
+        std::cout
+            << '\t'
+            << (message.IsError ? "ERROR " : "WRANING ")
+            << message.Coord
+            << ": "
+            << message.Text
+            << '\n';
     }
 
     inputChain.close();

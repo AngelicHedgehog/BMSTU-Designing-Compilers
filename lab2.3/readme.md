@@ -35,30 +35,20 @@ Comment ::= \'.*\n
 
 ## Грамматика языка
 ```
-Rules     ::= Rule Rules | Comment Rules | ε.
+Rules     ::= Rule Rules | ε.
 Rule      ::= '<' Nterm '<' Altrule '>' Altrules '>'.
 Altrules  ::= '<' Altrule '>' Altrules | ε.
 Altrule   ::= Term Altrule | Nterm Altrule | ε.
-Term      ::= [^a-zA-Z<>\s]
-Nterm     ::= [a-zA-Z] Nterm'
-Nterm'    ::= [^a-zA-Z<>\s] Nterm' | [a-zA-Z] Nterm' | ε
-Comment   ::= \\' Commnet' \n
-Comment'  ::= [^\n] Comment' | ε
 ```
 
 ## Таблица предсказывающего разбора
 
-|         |'\\''|'\n'|[^a-zA-Z<>\s\\'\n]|[a-zA-Z]|'<'|'>'|$|
-|:-       |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|Rules    |Comment Rules|ERROR|ERROR|ERROR|Rule Rules|ERROR|ε|
-|Rule     |ERROR|ERROR|ERROR|ERROR|'<' Nterm '<' Altrule '>' Altrules '>'|ERROR|ERROR|
-|Altrules |ERROR|ERROR|ERROR|ERROR|'<' Altrule '>' Altrules|ε|ERROR|
-|Altrule  |Term Altrule|Term Altrule|Term Altrule|Nterm Altrule|ERROR|ε|ERROR|
-|Term     |[^a-zA-Z<>\s]|ε|[^a-zA-Z<>\s]|ERROR|ERROR|ERROR|ERROR|
-|Nterm    |ERROR|ERROR|ERROR|[a-zA-Z] Nterm'|ε|ε|ERROR|
-|Nterm'   |[^a-zA-Z<>\s]|ε|[^a-zA-Z<>\s] Nterm'|[a-zA-Z] Nterm'|ε|ε|ERROR
-|Comment  |\\' Commnet' \n|ERROR|ERROR|ERROR|ERROR|ERROR|ERROR
-|Comment' |[^\n] Comment'|ε|[^\n] Comment'|[^\n] Comment'|[^\n] Comment'|[^\n] Comment'|ε
+|         |NTerm|Term|'<'|'>'|$|
+|:-       |:-:|:-:|:-:|:-:|:-:|
+|Rules    |ERROR|ERROR|Rule Rules|ERROR|ε|
+|Rule     |ERROR|ERROR|'<' Nterm '<' Altrule '>' Altrules '>'|ERROR|ERROR|
+|Altrules |ERROR|ERROR|'<' Altrule '>' Altrules|ε|ERROR|
+|Altrule  |Nterm Altrule|Term Altrule|ERROR|ε|ERROR|
 
 ## Программная реализация
 

@@ -10,47 +10,35 @@
 #include "lib/Compiler/Compiler.cpp"
 
 
-struct TabelLexemUnique
-{
-    std::string nonTerm;
-    std::string domen;
-    std::unique_ptr<Compiler::Token> token;
-};
-
-struct TabelLexemShared
+struct TabelLexem
 {
     std::string nonTerm;
     std::string domen;
     std::shared_ptr<Compiler::Token> token;
-
-    auto make_unique() -> TabelLexemUnique
-    {
-        return {nonTerm, domen, std::make_unique<Compiler::Token>(*token)};
-    }
 };
 
 auto errorLexem(Compiler::MessageList& messageList,
-    const TabelLexemShared& errorLex, std::string expected) -> void
+    const TabelLexem& errorLex, std::string expected) -> void
 {
     messageList.AddError(errorLex.token->Coords.Strarting,
         "Unexpected lexem '" + errorLex.token->str + "', expected '" + expected + "'.");
 }
 
 auto errorEarlyFinish(Compiler::MessageList& messageList,
-    const TabelLexemShared& errorLex) -> void
+    const TabelLexem& errorLex) -> void
 {
     messageList.AddError(errorLex.token->Coords.Strarting,
         "Text parsing was not completed.");
 }
 
 auto errorUnrecognizedTail(Compiler::MessageList& messageList,
-    const TabelLexemShared& errorLex) -> void
+    const TabelLexem& errorLex) -> void
 {
     messageList.AddError(errorLex.token->Coords.Strarting,
         "Unreconized tail of text.");
 }
 
-auto readNewLexem(Compiler::Scanner& scanner) -> TabelLexemShared
+auto readNewLexem(Compiler::Scanner& scanner) -> TabelLexem
 {
     auto nextToken = scanner.nextToken();
     auto nextLexem = nextToken ? std::make_shared<Compiler::Token>(*nextToken) : nullptr;
@@ -92,10 +80,10 @@ auto TopDownParse(
                             predictTable,
     Compiler::Scanner& scanner,
     Compiler::MessageList& messageList
-) -> std::vector<std::pair<TabelLexemUnique, std::vector<std::string>>>
+) -> std::vector<std::pair<TabelLexem, std::vector<std::string>>>
 {
 
-    std::vector<std::pair<TabelLexemUnique, std::vector<std::string>>> result{};
+    std::vector<std::pair<TabelLexem, std::vector<std::string>>> result{};
     std::stack<std::string> magazine{};
     magazine.push("$");
     magazine.push(startTerm);
@@ -109,7 +97,7 @@ auto TopDownParse(
         {
             magazine.pop();
             topSym = magazine.top();
-            result.push_back({TabelLexemUnique{"ε", "ε", std::make_unique<Compiler::Token>()},
+            result.push_back({{"ε", "ε", std::make_unique<Compiler::Token>()},
                 std::vector<std::string>{"ε"}});
         }
         alpha.nonTerm = topSym;
@@ -118,7 +106,7 @@ auto TopDownParse(
             if (topSym == alpha.domen)
             {
                 magazine.pop();
-                result.push_back({alpha.make_unique(),
+                result.push_back({alpha,
                     std::vector<std::string>{alpha.token->str}});
             }
             else if (topSym == "$")
@@ -147,7 +135,7 @@ auto TopDownParse(
             {
                 magazine.push(*it);
             }
-            result.push_back({alpha.make_unique(), rule});
+            result.push_back({alpha, rule});
         }
         else if (alpha.domen == "$")
         {

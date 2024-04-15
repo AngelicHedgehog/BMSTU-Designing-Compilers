@@ -10,67 +10,78 @@
 #include "lib/Compiler/Compiler.cpp"
 
 
-enum class TableLexemDomen
+struct TabelLexemUnique
 {
-    TERM,
-    NTERM,
-    OPEN_BRACKET,
-    CLOSE_BRACKET,
-    END_OF_FILE,
-};
-
-struct TabelLexem
-{
-    std::string str;
+    std::string nonTerm;
     std::string domen;
-    Compiler::Fragment coord;
+    std::unique_ptr<Compiler::Token> token;
 };
 
-auto errorLexem(Compiler::MessageList& messageList, const TabelLexem& errorLex, std::string expected) -> void
+struct TabelLexemShared
 {
-    messageList.AddError(errorLex.coord.Strarting,
-        "Unexpected lexem '" + errorLex.str + "', expected '" + expected + "'.");
+    std::string nonTerm;
+    std::string domen;
+    std::shared_ptr<Compiler::Token> token;
+
+    auto make_unique() -> TabelLexemUnique
+    {
+        return {nonTerm, domen, std::make_unique<Compiler::Token>(*token)};
+    }
+};
+
+auto errorLexem(Compiler::MessageList& messageList,
+    const TabelLexemShared& errorLex, std::string expected) -> void
+{
+    messageList.AddError(errorLex.token->Coords.Strarting,
+        "Unexpected lexem '" + errorLex.token->str + "', expected '" + expected + "'.");
 }
 
-auto errorEarlyFinish(Compiler::MessageList& messageList, const TabelLexem& errorLex) -> void
+auto errorEarlyFinish(Compiler::MessageList& messageList,
+    const TabelLexemShared& errorLex) -> void
 {
-    messageList.AddError(errorLex.coord.Strarting,
+    messageList.AddError(errorLex.token->Coords.Strarting,
         "Text parsing was not completed.");
 }
 
-auto errorUnrecognizedTail(Compiler::MessageList& messageList, const TabelLexem& errorLex) -> void
+auto errorUnrecognizedTail(Compiler::MessageList& messageList,
+    const TabelLexemShared& errorLex) -> void
 {
-    messageList.AddError(errorLex.coord.Strarting,
+    messageList.AddError(errorLex.token->Coords.Strarting,
         "Unreconized tail of text.");
 }
 
-auto readNewLexem(Compiler::Scanner& scanner) -> TabelLexem
+auto readNewLexem(Compiler::Scanner& scanner) -> TabelLexemShared
 {
-    auto nextLexem = scanner.nextToken();
-    if (!nextLexem || nextLexem->Tag == Compiler::Token::DomainTag::NIL)
+    auto nextToken = scanner.nextToken();
+    auto nextLexem = nextToken ? std::make_shared<Compiler::Token>(*nextToken) : nullptr;
+    if (!nextLexem)
     {
-        return {"$", "$", nextLexem ? nextLexem->Coords.Strarting : Compiler::Position{0, 0}};
+        return {"", "$", std::make_shared<Compiler::Token>()};
+    }
+    if (nextLexem->Tag == Compiler::Token::DomainTag::NIL)
+    {
+        return {"", "$", nextLexem};
     }
     if (nextLexem->Tag == Compiler::Token::DomainTag::TERM)
     {
-        return {nextLexem->str, "Term", nextLexem->Coords.Strarting};
+        return {"", "Term", nextLexem};
     }
     if (nextLexem->Tag == Compiler::Token::DomainTag::NTERM)
     {
-        return {nextLexem->str, "Nterm", nextLexem->Coords.Strarting};
+        return {"", "Nterm", nextLexem};
     }
     if (nextLexem->Tag == Compiler::Token::DomainTag::KEYWORD)
     {
         if (nextLexem->str == "<")
         {
-            return {nextLexem->str, "<", nextLexem->Coords.Strarting};
+            return {"", "<", nextLexem};
         }
         else
         {
-            return {nextLexem->str, ">", nextLexem->Coords.Strarting};
+            return {"", ">", nextLexem};
         }        
     }
-    return {"$", "$"};
+    return {"", "$", std::make_shared<Compiler::Token>()};
 }
 
 auto TopDownParse(
@@ -81,10 +92,10 @@ auto TopDownParse(
                             predictTable,
     Compiler::Scanner& scanner,
     Compiler::MessageList& messageList
-) -> std::vector<std::pair<std::string, std::vector<std::string>>>
+) -> std::vector<std::pair<TabelLexemUnique, std::vector<std::string>>>
 {
 
-    std::vector<std::pair<std::string, std::vector<std::string>>> result{};
+    std::vector<std::pair<TabelLexemUnique, std::vector<std::string>>> result{};
     std::stack<std::string> magazine{};
     magazine.push("$");
     magazine.push(startTerm);
@@ -98,14 +109,17 @@ auto TopDownParse(
         {
             magazine.pop();
             topSym = magazine.top();
-            result.push_back({"ε", {"\"ε\""}});
+            result.push_back({TabelLexemUnique{"ε", "ε", std::make_unique<Compiler::Token>()},
+                std::vector<std::string>{"ε"}});
         }
+        alpha.nonTerm = topSym;
         if (!nonTerminals.contains(topSym))
         {
             if (topSym == alpha.domen)
             {
                 magazine.pop();
-                result.push_back({alpha.domen, {"\"" + alpha.str + "\""}});
+                result.push_back({alpha.make_unique(),
+                    std::vector<std::string>{alpha.token->str}});
             }
             else if (topSym == "$")
             {
@@ -133,7 +147,7 @@ auto TopDownParse(
             {
                 magazine.push(*it);
             }
-            result.push_back({topSym, rule});
+            result.push_back({alpha.make_unique(), rule});
         }
         else if (alpha.domen == "$")
         {
@@ -205,37 +219,38 @@ int main()
 
     std::stack<std::size_t> magazine{};
 
-
-    auto printMag = [&]()
-    {
-        std::vector<std::size_t> temp{};
-        while (!magazine.empty())
-        {
-            temp.push_back(magazine.top());
-            magazine.pop();
-        }
-        for (auto it = temp.rbegin(); it != temp.rend(); ++it)
-        {
-            std::cout << *it << ' ';
-            magazine.push(*it);
-        }
-        std::cout << '\n';
-    };
     for (const auto& [nonTerm, rule] : res)
     {
         while (!magazine.empty() && magazine.top() == 0)
         {
             magazine.pop();
         }
-        // printMag();
         for (std::size_t i = 0; i != magazine.size(); ++i)
         {
             std::cout << "  ";
         }
-        std::cout << nonTerm << " -> ";
-        for (const auto& ruleTerm : rule)
+        std::cout << nonTerm.nonTerm << " -> ";
+        if (!nonTerminals.contains(nonTerm.nonTerm))
         {
-            std::cout << ruleTerm << ' ';
+            std::cout << "\'" << nonTerm.domen << "\' ";
+            if (nonTerm.nonTerm != "$" && nonTerm.nonTerm != "ε")
+            {
+                std::cout << nonTerm.token->Coords.Strarting <<
+                '-' <<
+                nonTerm.token->Coords.Ending;
+            }
+            if (nonTerm.token->Tag != nonTerm.token->KEYWORD &&
+                nonTerm.token->Tag != nonTerm.token->NIL)
+            {
+                std::cout << " \"" << nonTerm.token->str << "\"";
+            }
+        }
+        else
+        {
+            for (const auto& ruleTerm : rule)
+            {
+                std::cout << ruleTerm << ' ';
+            }
         }
         std::cout << "\n";
 
@@ -247,7 +262,7 @@ int main()
         }
 
         std::size_t countNonTerms = 0;
-        if (nonTerminals.contains(nonTerm))
+        if (nonTerminals.contains(nonTerm.nonTerm))
         {
             countNonTerms = rule.size();
         }

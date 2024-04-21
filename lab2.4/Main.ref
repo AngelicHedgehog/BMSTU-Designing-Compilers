@@ -1,0 +1,12 @@
+*$FROM LibraryEx
+$EXTERN ArgList;
+
+$ENTRY Go {
+    /* пусто */ = <Main <ArgList>>
+}
+
+Main {
+    (e.ProgName) (e.InputFile)
+        , <Prout e.InputFile> :
+        = /* пусто */;
+}

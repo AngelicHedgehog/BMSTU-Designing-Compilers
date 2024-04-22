@@ -1,3 +1,9 @@
+/*
+    <Parse t.Token*> == t.Errors t.TreeNode
+    t.Errors ::= (ERR t.Error*)
+    t.Error ::= s.Char*
+    t.TreeNode ::= (s.Nterm (s.Token*) t.TreeNode*)
+*/
 $ENTRY Parse {
     e.Tokens
         , <Rules (ERR) () e.Tokens '$'> : {

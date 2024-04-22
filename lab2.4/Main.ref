@@ -1,5 +1,7 @@
 *$FROM LibraryEx
-$EXTERN ArgList;
+*$FROM Lexer
+*$FROM Parser
+$EXTERN ArgList, LoadFile, Lexer, Parse;
 
 $ENTRY Go {
     /* пусто */ = <Main <ArgList>>
@@ -7,6 +9,6 @@ $ENTRY Go {
 
 Main {
     (e.ProgName) (e.InputFile)
-        , <Prout e.InputFile> :
+        , <Prout <Parse <Lexer <LoadFile e.InputFile>>>> :
         = /* пусто */;
 }

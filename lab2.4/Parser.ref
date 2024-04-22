@@ -1,115 +1,100 @@
 $ENTRY Parse {
-    e.Tokens = <Parse-Check <Rules () e.Tokens>>;
+    e.Tokens = <Parse-Check <Rules () e.Tokens '$'>>;
 }
 
 Parse-Check {
     Rules '$' = Ok;
-  
-    s.Unexpected e.Tokens = Unexpected s.Unexpected Expected EOF;
-  
-    ERR e.Message = e.Message
+
+    ERR e.Message = e.Message;
+
+    t.Unexpected e.Tokens = Unexpected t.Unexpected Expected EOF;
 }
 
 Rules {
     (e.Scanned) ERR e.Message = ERR e.Message;
-  
+
     /* Rules ::= Rule Rules */
     () Rule e.Tokens = <Rules (Rule) e.Tokens>;
-    () e.Tokens = <Rules () <Rule () e.Tokens>>;
-  
+    () '<' e.Tokens = <Rules () <Rule () '<' e.Tokens>>;
+
     (Rule) Rules e.Tokens = <Rules (Rule Rules) e.Tokens>;
     (Rule) e.Tokens = <Rules (Rule) <Rules () e.Tokens>>;
-  
+
     (Rule Rules) e.Tokens = Rules e.Tokens;
-    
+
     /* Rules ::= ε */
-    () e.Tokens = Rules e.Tokens
+    () e.Tokens = Rules e.Tokens;
 }
 
 Rule {
     (e.Scanned) ERR e.Message = ERR e.Message;
 
     /* Rule ::= '<' Nterm '<' Altrule '>' Altrules '>' */
-    () "<" e.Tokens = <Rule ("<") e.Tokens>;
-  
-    ("<") (Nterm e._) e.Tokens
-        = <Rule ("<" (Nterm e._)) e.Tokens>;
-  
-    ("<" (Nterm e._)) "<" e.Tokens
-        = <Rule ("<" (Nterm e._) "<") e.Tokens>;
-    
-    ("<" (Nterm e._) "<") Altrule e.Tokens
-        = <Rule ("<" (Nterm e._) "<" Altrule) e.Tokens>;
-    ("<" (Nterm e._) "<") e.Tokens
-        = <Rule ("<" (Nterm e._) "<") <Altrule () e.Tokens>>;
+    () '<' e.Tokens = <Rule ('<') e.Tokens>;
 
-    ("<" (Nterm e._) "<" Altrule) ">" e.Tokens
-        = <Rule ("<" (Nterm e._) "<" Altrule ">") e.Tokens>;
+    ('<') (Nterm e.attrs) e.Tokens = <Rule ('<' (Nterm e.attrs)) e.Tokens>;
 
-    ("<" (Nterm e._) "<" Altrule ">") Altrules e.Tokens
-        = <Rule ("<" (Nterm e._) "<" Altrule ">" Altrules) e.Tokens>;
-    ("<" (Nterm e._) "<" Altrule ">") e.Tokens
-        = <Rule ("<" (Nterm e._) "<" Altrule ">") <Altrules () e.Tokens>>;
+    ('<' t.Nterm) '<' e.Tokens = <Rule ('<' t.Nterm '<') e.Tokens>;
 
-    ("<" (Nterm e._) "<" Altrule ">" Altrules) ">" e.Tokens
-        = <Rule ("<" (Nterm e._) "<" Altrule ">" Altrules ">") e.Tokens>;
-    
-    ("<" (Nterm e._) "<" Altrule ">" Altrules ">") e.Tokens
-        = Rules e.Tokens;
-    
-    (e.Scanned) s.Unexpected e.Tokens
-        = ERR Unexpected s.Unexpected in Rule;
+    (e.Pref '<') Altrule e.Tokens = <Rule (e.Pref '<' Altrule) e.Tokens>;
+    (e.Pref '<') e.Tokens = <Rule (e.Pref '<') <Altrule () e.Tokens>>;
+
+    (e.Pref Altrule) '>' e.Tokens = <Rule (e.Pref Altrule '>') e.Tokens>;
+
+    (e.Pref Altrule '>') Altrules e.Tokens = <Rule (e.Pref Altrule '>' Altrules) e.Tokens>;
+    (e.Pref Altrule '>') e.Tokens = <Rule (e.Pref Altrule '>') <Altrules () e.Tokens>>;
+
+    (e.Pref Altrules) '>' e.Tokens = <Rule (e.Pref Altrules '>') e.Tokens>;
+
+    ('<' (Nterm e.attrs) '<' Altrule '>' Altrules '>') e.Tokens = Rule e.Tokens;
+
+    (e.Scanned) t.Unexpected e.Tokens
+        = ERR Unexpected t.Unexpected in Rule;
 }
 
 Altrules {
     (e.Scanned) ERR e.Message = ERR e.Message;
 
-    /* Rule ::= '<' Nterm '<' Altrule '>' Altrules '>' */
-    () "<" e.Tokens
-        = <Rule ("<") e.Tokens>;
-    
-    ("<") Altrule e.Tokens
-        = <Rule ("<" Altrule) e.Tokens>;
-    ("<") e.Tokens
-        = <Rule ("<") <Altrule () e.Tokens>>;
+    /* Altrules ::= '<' Altrule '>' Altrules */
+    () '<' e.Tokens = <Altrules ('<') e.Tokens>;
 
-    ("<" Altrule) ">" e.Tokens
-        = <Rule ("<" Altrule ">") e.Tokens>;
+    ('<') Altrule e.Tokens = <Altrules ('<' Altrule) e.Tokens>;
+    ('<') e.Tokens = <Altrules ('<') <Altrule () e.Tokens>>;
 
-    ("<" Altrule ">") Altrules e.Tokens
-        = <Rule ("<" Altrule ">" Altrules) e.Tokens>;
-    ("<" Altrule ">") e.Tokens
-        = <Rule ("<" Altrule ">") <Altrules () e.Tokens>>;
+    ('<' Altrule) '>' e.Tokens = <Altrules ('<' Altrule '>') e.Tokens>;
 
-    ("<" Altrule ">" Altrules) e.Tokens
+    (e.Pref '>') Altrules e.Tokens = <Altrules (e.Pref '>' Altrules) e.Tokens>;
+    (e.Pref '>') e.Tokens = <Altrules (e.Pref '>') <Altrules () e.Tokens>>;
+
+    ('<' Altrule '>' Altrules) e.Tokens
         = Altrules e.Tokens;
 
     /* Rules ::= ε */
-    () e.Tokens = Altrules e.Tokens
+    () e.Tokens = Altrules e.Tokens;
 
-    (e.Scanned) s.Unexpected e.Tokens
-        = ERR Unexpected s.Unexpected in Rule;
+    (e.Scanned) t.Unexpected e.Tokens
+        = ERR Unexpected t.Unexpected in Altrules;
 }
 
 Altrule {
     (e.Scanned) ERR e.Message = ERR e.Message;
 
     /* Altrule ::= Term Altrule */
-    () (Term e._) e.Tokens = <Altrule ((Term e._)) e.Tokens>;
-  
-    ((Term e._)) Altrule e.Tokens = <Rules ((Term e._) Altrule) e.Tokens>;
-    ((Term e._)) e.Tokens = <Rules ((Term e._)) <Altrule () e.Tokens>>;
-  
-    ((Term e._) Altrule) e.Tokens = Altrule e.Tokens;
-    
+    () (Term e.attrs) e.Tokens = <Altrule ((Term e.attrs)) e.Tokens>;
+
+    ((Term e.attrs)) Altrule e.Tokens = <Altrule ((Term e.attrs) Altrule) e.Tokens>;
+    ((Term e.attrs)) e.Tokens = <Altrule ((Term e.attrs)) <Altrule () e.Tokens>>;
+
+    ((Term e.attrs) Altrule) e.Tokens = Altrule e.Tokens;
+
     /* Altrule ::= Nterm Altrule */
-    () (Nterm e._) e.Tokens = <Altrule ((Nterm e._)) e.Tokens>;
-  
-    ((Nterm e._)) Altrule e.Tokens = <Rules ((Nterm e._) Altrule) e.Tokens>;
-    ((Nterm e._)) e.Tokens = <Rules ((Nterm e._)) <Altrule () e.Tokens>>;
-  
-    ((Nterm e._) Altrule) e.Tokens = Altrule e.Tokens;
+    () (Nterm e.attrs) e.Tokens = <Altrule ((Nterm e.attrs)) e.Tokens>;
+
+    ((Nterm e.attrs)) Altrule e.Tokens = <Altrule ((Nterm e.attrs) Altrule) e.Tokens>;
+    ((Nterm e.attrs)) e.Tokens = <Altrule ((Nterm e.attrs)) <Altrule () e.Tokens>>;
+
+    ((Nterm e.attrs) Altrule) e.Tokens = Altrule e.Tokens;
 
     /* Altrule ::= ε */
-    () e.Tokens = Altrule e.Tokens
+    () e.Tokens = Altrule e.Tokens;
 }

@@ -1,0 +1,80 @@
+*$FROM LibraryEx
+$EXTERN Inc, Dec;
+
+/*
+    <Lexem-Pos e.Lines> == t.Token*
+    e.Lines ::= e.Line*
+    e.Line ::= (s.Sym*)
+    t.Token ::=
+          '<'
+        | '>'
+        | (Nterm t.Fragment t.Lexem)
+        | (Term t.Fragment t.Lexem)
+    t.Fragment ::= (t.StartPos t.EndPos)
+    t.StartPos ::= t.Pos
+    t.EndPos ::= t.Pos
+    t.Pos ::= (s.Line s.Col)
+    t.Lexem ::= s.Char+
+*/
+$ENTRY Lexer {
+    e.Lines = <Lexer-Pos (1 1) e.Lines>;
+}
+
+/*
+    <Lexem-Pos (s.Line s.Col) e.Lines> == t.Token*
+    e.Lines ::= e.Line*
+    e.Line ::= (s.Sym*)
+    t.Token ::=
+          '<'
+        | '>'
+        | (Nterm t.Fragment t.Lexem)
+        | (Term t.Fragment t.Lexem)
+    t.Fragment ::= (t.StartPos t.EndPos)
+    t.StartPos ::= t.Pos
+    t.EndPos ::= t.Pos
+    t.Pos ::= (s.Line s.Col)
+    t.Lexem ::= s.Char+
+*/
+Lexer-Pos {
+    (s.Line s.Col) = /* пусто */;
+
+    /* Space ::= \s */
+    (s.Line s.Col) (' ' e.Syms) e.Lines = <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) ('\r' e.Syms) e.Lines = <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) ('\t' e.Syms) e.Lines = <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) () e.Lines = <Lexer-Pos (<Inc s.Line> 1) e.Lines>;
+
+    /* Comment ::= \'.*\n */
+    (s.Line s.Col) ('\'' e._) e.Lines = <Lexer-Pos (<Inc s.Line> 1) e.Lines>;
+
+    (s.Line s.Col) ('<' e.Syms) e.Lines = '<' <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) ('>' e.Syms) e.Lines = '>' <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+
+    (s.Line s.Col) (s.Sym e.Syms) e.Lines
+        , <Compare <Ord <Lower s.Sym>> <Dec <Ord 'a'>>> : {
+            '+', <Compare <Ord <Lower s.Sym>> <Inc <Ord 'z'>>> : {
+                '-' = Nterm <Lexem (s.Line s.Col) s.Sym e.Syms>;
+                e._ = Term <Lexem (s.Line s.Col) s.Sym e.Syms>;
+            };
+            e._ = Term <Lexem (s.Line s.Col) s.Sym e.Syms>;
+        } : s.LexemType t.Lexem (s.Line_ s.Col_) e.Syms_
+        = (s.LexemType ((s.Line s.Col) (s.Line_ s.Col_)) t.Lexem)
+            <Lexer-Pos (s.Line_ s.Col_) (e.Syms_) e.Lines>;
+}
+
+/*
+    <Lexem (s.Line s.Col) e.Syms> == t.Lexem (s.Line_ s.Col_) e.Syms_
+    t.Lexem ::= s.Char*
+*/
+Lexem {
+    (s.Line s.Col) = () (s.Line s.Col);
+    (s.Line s.Col) ' ' e.Syms = () (s.Line s.Col) ' ' e.Syms;
+    (s.Line s.Col) '\r' e.Syms = () (s.Line s.Col) '\r' e.Syms;
+    (s.Line s.Col) '\t' e.Syms = () (s.Line s.Col) '\t' e.Syms;
+    (s.Line s.Col) '<' e.Syms = () (s.Line s.Col) '<' e.Syms;
+    (s.Line s.Col) '>' e.Syms = () (s.Line s.Col) '>' e.Syms;
+
+    (s.Line s.Col) s.Sym e.Syms
+        , <Lexem (s.Line s.Col) e.Syms> : (e.Lexem) (s.Line_ s.Col_) e.Syms_
+        = (s.Sym e.Lexem) (s.Line_ <Inc s.Col_>) e.Syms_;
+}

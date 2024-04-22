@@ -47,8 +47,12 @@ Lexer-Pos {
     /* Comment ::= \'.*\n */
     (s.Line s.Col) ('\'' e._) e.Lines = <Lexer-Pos (<Inc s.Line> 1) e.Lines>;
 
-    (s.Line s.Col) ('<' e.Syms) e.Lines = '<' <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
-    (s.Line s.Col) ('>' e.Syms) e.Lines = '>' <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) ('<' e.Syms) e.Lines =
+        ('<' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+        <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
+    (s.Line s.Col) ('>' e.Syms) e.Lines =
+        ('>' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+        <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
 
     (s.Line s.Col) (s.Sym e.Syms) e.Lines
         , <Compare <Ord <Lower s.Sym>> <Dec <Ord 'a'>>> : {

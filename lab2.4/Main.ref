@@ -1,7 +1,7 @@
 *$FROM LibraryEx
 *$FROM Lexer
 *$FROM Parser
-$EXTERN ArgList, LoadFile, Lexer, Parse;
+$EXTERN ArgList, LoadFile, Map, Lexer, Parse;
 
 $ENTRY Go {
     /* пусто */ = <Main <ArgList>>
@@ -9,6 +9,24 @@ $ENTRY Go {
 
 Main {
     (e.ProgName) (e.InputFile)
-        , <Prout <Parse <Lexer <LoadFile e.InputFile>>>> :
-        = /* пусто */;
+        , <Parse <Lexer <LoadFile e.InputFile>>> : s.Result t.ParseTree
+        , s.Result : {
+            Ok = <Print-ParseTree () t.ParseTree>;
+            ERR = <Prout Error ':' t.ParseTree>;
+        };
+}
+
+Print-ParseTree {
+    (e.Indent) () = /* пусто */;
+    (e.Indent) (s.Nterm (t.Start t.End))
+        = <Prout e.Indent '\'' s.Nterm '\' -> ' t.Start '-' t.End>;
+    (e.Indent) (s.Nterm (t.Start t.End) (e.Value))
+        = <Prout e.Indent '\'' s.Nterm '\' -> ' t.Start '-' t.End ' "' e.Value '"'>;
+    (e.Indent) (s.Nterm ())
+        = <Prout e.Indent s.Nterm ' -> ε'>;
+    (e.Indent) (s.Nterm (e.Tokens) e.TreeNodes)
+        = <Prout e.Indent s.Nterm ' -> ' e.Tokens>
+          <Map {
+            t.TreeNode = <Print-ParseTree (e.Indent '  ') t.TreeNode>;
+          } e.TreeNodes>;
 }

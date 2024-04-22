@@ -1,128 +1,131 @@
 $ENTRY Parse {
-    e.Tokens = <Parse-Check <Rules () e.Tokens '$'>>;
-}
-
-Parse-Check {
-    t.ParseTree '$' = Ok t.ParseTree;
-
-    ERR e.Message = ERR (e.Message);
-
-    t.Unexpected e.Tokens = ERR Unexpected t.Unexpected Expected EOF;
+    e.Tokens
+        , <Rules (ERR) () e.Tokens '$'> : {
+            t.Errors t.ParseTree '$' = t.Errors t.ParseTree;
+            (e.Errors) t.ParseTree t.Token e._
+                = (e.Errors (Token t.Token didnt recognized)) t.ParseTree;
+        };
 }
 
 /*
-    <Rules (e.Scanned) t.Token*> ==
-          t.TreeNode t.Token*
-        | ERR e.Message
+    <Rules t.Errors (e.Scanned) t.Token*> == t.Errors t.TreeNode t.Token*
+    t.Errors ::= (ERR t.Error*)
+    t.Error ::= s.Char*
     t.TreeNode ::= (s.Nterm (s.Token*) t.TreeNode*)
 */
 Rules {
-    (e.Scanned) ERR e.Message = ERR e.Message;
-
     /* Rules ::= Rule Rules */
-    () (Rule e.R) e.Tokens = <Rules ((Rule e.R)) e.Tokens>;
-    () ('<' e.OB) e.Tokens = <Rules () <Rule () ('<' e.OB) e.Tokens>>;
+    (ERR e.Ers) () (ERR e.NErs) (Rule e.R) e.Tokens
+        = <Rules (ERR e.Ers e.NErs) ((Rule e.R)) e.Tokens>;
+    (ERR e.Ers) () ('<' e.OB) e.Tokens
+        = <Rules (ERR e.Ers) () <Rule (ERR) () ('<' e.OB) e.Tokens>>;
 
-    ((Rule e.R)) (Rules e.Rs) e.Tokens
-        = <Rules ((Rule e.R) (Rules e.Rs)) e.Tokens>;
-    ((Rule e.R)) e.Tokens
-        = <Rules ((Rule e.R)) <Rules () e.Tokens>>;
+    (ERR e.Ers) ((Rule e.R)) (ERR e.NErs) (Rules e.Rs) e.Tokens
+        = <Rules (ERR e.Ers e.NErs) ((Rule e.R) (Rules e.Rs)) e.Tokens>;
+    (ERR e.Ers) ((Rule e.R)) e.Tokens
+        = <Rules (ERR e.Ers) ((Rule e.R)) <Rules (ERR) () e.Tokens>>;
 
-    (t.Rule (Rules e.Rs)) e.Tokens
-        = (Rules (Rule Rules) t.Rule (Rules e.Rs)) e.Tokens;
+    (ERR e.Ers) (t.Rule (Rules e.Rs)) e.Tokens
+        = (ERR e.Ers) (Rules (Rule Rules) t.Rule (Rules e.Rs)) e.Tokens;
 
     /* Rules ::= ε */
-    () e.Tokens = (Rules ()) e.Tokens;
+    (ERR e.Ers) () e.Tokens = (ERR e.Ers) (Rules ()) e.Tokens;
 }
 
 Rule {
-    (e.Scanned) ERR e.Message = ERR e.Message;
-
     /* Rule ::= '<' Nterm '<' Altrule '>' Altrules '>' */
-    () ('<' e.OB) e.Tokens = <Rule (('<' e.OB)) e.Tokens>;
+    (ERR e.Ers) () ('<' e.OB) e.Tokens = <Rule (ERR e.Ers) (('<' e.OB)) e.Tokens>;
 
-    (('<' e.OB)) (Nterm e.N) e.Tokens
-        = <Rule (('<' e.OB) (Nterm e.N)) e.Tokens>;
+    (ERR e.Ers) (('<' e.OB)) (Nterm e.N) e.Tokens
+        = <Rule (ERR e.Ers) (('<' e.OB) (Nterm e.N)) e.Tokens>;
 
-    (('<' e.OB1) t.Nterm) ('<' e.OB2) e.Tokens
-        = <Rule (('<' e.OB1) t.Nterm ('<' e.OB2)) e.Tokens>;
+    (ERR e.Ers) (('<' e.OB1) t.Nterm) ('<' e.OB2) e.Tokens
+        = <Rule (ERR e.Ers) (('<' e.OB1) t.Nterm ('<' e.OB2)) e.Tokens>;
 
-    (e.Pref ('<' e.OB)) (Altrule e.A) e.Tokens
-        = <Rule (e.Pref ('<' e.OB) (Altrule e.A)) e.Tokens>;
-    (e.Pref ('<' e.OB)) e.Tokens
-        = <Rule (e.Pref ('<' e.OB)) <Altrule () e.Tokens>>;
+    (ERR e.Ers) (e.Pref ('<' e.OB)) (ERR e.NErs) (Altrule e.A) e.Tokens
+        = <Rule (ERR e.Ers e.NErs) (e.Pref ('<' e.OB) (Altrule e.A)) e.Tokens>;
+    (ERR e.Ers) (e.Pref ('<' e.OB)) e.Tokens
+        = <Rule (ERR e.Ers) (e.Pref ('<' e.OB)) <Altrule (ERR) () e.Tokens>>;
 
-    (e.Pref (Altrule e.A)) ('>' e.CB) e.Tokens
-        = <Rule (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens>;
+    (ERR e.Ers) (e.Pref (Altrule e.A)) ('>' e.CB) e.Tokens
+        = <Rule (ERR e.Ers) (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens>;
 
-    (e.Pref (Altrule e.A) ('>' e.CB)) (Altrules e.As) e.Tokens
-        = <Rule (e.Pref (Altrule e.A) ('>' e.CB) (Altrules e.As)) e.Tokens>;
-    (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens
-        = <Rule (e.Pref (Altrule e.A) ('>' e.CB)) <Altrules () e.Tokens>>;
+    (ERR e.Ers) (e.Pref (Altrule e.A) ('>' e.CB)) (ERR e.NErs) (Altrules e.As) e.Tokens
+        = <Rule (ERR e.Ers e.NErs) (e.Pref (Altrule e.A) ('>' e.CB) (Altrules e.As)) e.Tokens>;
+    (ERR e.Ers) (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens
+        = <Rule (ERR e.Ers) (e.Pref (Altrule e.A) ('>' e.CB)) <Altrules (ERR) () e.Tokens>>;
 
-    (e.Pref (Altrules e.A)) ('>' e.CB) e.Tokens
-        = <Rule (e.Pref (Altrules e.A) ('>' e.CB)) e.Tokens>;
+    (ERR e.Ers) (e.Pref (Altrules e.A)) ('>' e.CB) e.Tokens
+        = <Rule (ERR e.Ers) (e.Pref (Altrules e.A) ('>' e.CB)) e.Tokens>;
 
-    (e.Pref ('>' e.CB)) e.Tokens
-        = (Rule ('<' Nterm '<' Altrule '>' Altrules '>')
+    (ERR e.Ers) (e.Pref ('>' e.CB)) e.Tokens
+        = (ERR e.Ers) (Rule ('<' Nterm '<' Altrule '>' Altrules '>')
             e.Pref ('>' e.CB)) e.Tokens;
 
-    (e.Scanned) t.Unexpected e.Tokens
-        = ERR Unexpected t.Unexpected in Rule;
+
+    (ERR e.Ers) (e.Scanned) '$'
+        = (ERR e.Ers (Unexpected EOF in Rule)) () '$';
+    (ERR e.Ers) (e.Scanned) t.Token e.Tokens
+        = <Rule
+            (ERR e.Ers (Unexpected t.Token in Rule))
+            (e.Scanned) e.Tokens>;
 }
 
 Altrules {
-    (e.Scanned) ERR e.Message = ERR e.Message;
-
     /* Altrules ::= '<' Altrule '>' Altrules */
-    () ('<' e.OB) e.Tokens = <Altrules (('<' e.OB)) e.Tokens>;
+    (ERR e.Ers) () ('<' e.OB) e.Tokens = <Altrules (ERR e.Ers) (('<' e.OB)) e.Tokens>;
 
-    (('<' e.OB)) (Altrule e.A) e.Tokens = <Altrules (('<' e.OB) (Altrule e.A)) e.Tokens>;
-    (('<' e.OB)) e.Tokens = <Altrules (('<' e.OB)) <Altrule () e.Tokens>>;
+    (ERR e.Ers) (('<' e.OB)) (ERR e.NErs) (Altrule e.A) e.Tokens
+        = <Altrules (ERR e.Ers e.NErs) (('<' e.OB) (Altrule e.A)) e.Tokens>;
+    (ERR e.Ers) (('<' e.OB)) e.Tokens
+        = <Altrules (ERR e.Ers) (('<' e.OB)) <Altrule (ERR) () e.Tokens>>;
 
-    (e.Pref (Altrule e.A)) ('>' e.CB) e.Tokens
-        = <Altrules (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens>;
+    (ERR e.Ers) (e.Pref (Altrule e.A)) ('>' e.CB) e.Tokens
+        = <Altrules (ERR e.Ers) (e.Pref (Altrule e.A) ('>' e.CB)) e.Tokens>;
 
-    (e.Pref ('>' e.CB)) (Altrules e.As) e.Tokens
-        = <Altrules (e.Pref ('>' e.CB) (Altrules e.As)) e.Tokens>;
-    (e.Pref ('>' e.CB)) e.Tokens
-        = <Altrules (e.Pref ('>' e.CB)) <Altrules () e.Tokens>>;
+    (ERR e.Ers) (e.Pref ('>' e.CB)) (ERR e.NErs) (Altrules e.As) e.Tokens
+        = <Altrules (ERR e.Ers e.NErs) (e.Pref ('>' e.CB) (Altrules e.As)) e.Tokens>;
+    (ERR e.Ers) (e.Pref ('>' e.CB)) e.Tokens
+        = <Altrules (ERR e.Ers) (e.Pref ('>' e.CB)) <Altrules (ERR) () e.Tokens>>;
 
-    (e.Pref (Altrules e.As)) e.Tokens
-        = (Altrules ('<' Altrule '>' Altrules) e.Pref (Altrules e.As)) e.Tokens;
+    (ERR e.Ers) (e.Pref (Altrules e.As)) e.Tokens
+        = (ERR e.Ers) (Altrules ('<' Altrule '>' Altrules) e.Pref (Altrules e.As)) e.Tokens;
 
     /* Rules ::= ε */
-    () e.Tokens = (Altrules ()) e.Tokens;
+    (ERR e.Ers) () e.Tokens = (ERR e.Ers) (Altrules ()) e.Tokens;
 
-    (e.Scanned) t.Unexpected e.Tokens
-        = ERR Unexpected t.Unexpected in Altrules;
+
+    (ERR e.Ers) (e.Scanned) '$'
+        = (ERR e.Ers (Unexpected EOF in Altrules)) () '$';
+    (ERR e.Ers) (e.Scanned) t.Token e.Tokens
+        = <Altrules
+            (ERR e.Ers (Unexpected t.Token in Altrules))
+            (e.Scanned) e.Tokens>;
 }
 
 Altrule {
-    (e.Scanned) ERR e.Message = ERR e.Message;
-
     /* Altrule ::= Term Altrule */
-    () (Term e.T) e.Tokens = <Altrule ((Term e.T)) e.Tokens>;
+    (ERR e.Ers) () (Term e.T) e.Tokens = <Altrule (ERR e.Ers) ((Term e.T)) e.Tokens>;
 
-    ((Term e.T)) (Altrule e.A) e.Tokens
-        = <Altrule ((Term e.T) (Altrule e.A)) e.Tokens>;
-    ((Term e.T)) e.Tokens
-        = <Altrule ((Term e.T)) <Altrule () e.Tokens>>;
+    (ERR e.Ers) ((Term e.T)) (ERR e.NErs) (Altrule e.A) e.Tokens
+        = <Altrule (ERR e.Ers e.NErs) ((Term e.T) (Altrule e.A)) e.Tokens>;
+    (ERR e.Ers) ((Term e.T)) e.Tokens
+        = <Altrule (ERR e.Ers) ((Term e.T)) <Altrule (ERR) () e.Tokens>>;
 
-    ((Term e.T) t.A) e.Tokens
-        = (Altrule (Term Altrule) (Term e.T) t.A) e.Tokens;
+    (ERR e.Ers) ((Term e.T) t.A) e.Tokens
+        = (ERR e.Ers) (Altrule (Term Altrule) (Term e.T) t.A) e.Tokens;
 
     /* Altrule ::= Nterm Altrule */
-    () (Nterm e.N) e.Tokens = <Altrule ((Nterm e.N)) e.Tokens>;
+    (ERR e.Ers) () (Nterm e.N) e.Tokens = <Altrule (ERR e.Ers) ((Nterm e.N)) e.Tokens>;
 
-    ((Nterm e.N)) (Altrule e.A) e.Tokens
-        = <Altrule ((Nterm e.N) (Altrule e.A)) e.Tokens>;
-    ((Nterm e.N)) e.Tokens
-        = <Altrule ((Nterm e.N)) <Altrule () e.Tokens>>;
+    (ERR e.Ers) ((Nterm e.N)) (ERR e.NErs) (Altrule e.A) e.Tokens
+        = <Altrule (ERR e.Ers e.NErs) ((Nterm e.N) (Altrule e.A)) e.Tokens>;
+    (ERR e.Ers) ((Nterm e.N)) e.Tokens
+        = <Altrule (ERR e.Ers) ((Nterm e.N)) <Altrule (ERR) () e.Tokens>>;
 
-    ((Nterm e.N) t.A) e.Tokens
-        = (Altrule (Nterm Altrule) (Nterm e.N) t.A) e.Tokens;
+    (ERR e.Ers) ((Nterm e.N) t.A) e.Tokens
+        = (ERR e.Ers) (Altrule (Nterm Altrule) (Nterm e.N) t.A) e.Tokens;
 
     /* Altrule ::= ε */
-    () e.Tokens = (Altrule ()) e.Tokens;
+    (ERR e.Ers) () e.Tokens = (ERR e.Ers) (Altrule ()) e.Tokens;
 }

@@ -9,11 +9,10 @@ $ENTRY Go {
 
 Main {
     (e.ProgName) (e.InputFile)
-        , <Parse <Lexer <LoadFile e.InputFile>>> : s.Result t.ParseTree
-        , s.Result : {
-            Ok = <Print-ParseTree () t.ParseTree>;
-            ERR = <Prout Error ':' t.ParseTree>;
-        };
+        , <Parse <Lexer <LoadFile e.InputFile>>> : (ERR e.Errors) t.ParseTree
+        = <Print-ParseTree () t.ParseTree>
+          <Prout "\nERRORS:">
+          <Map {(e.Err) = <Prout 'Error: ' e.Err>;} e.Errors>;
 }
 
 Print-ParseTree {

@@ -1,40 +1,92 @@
 *$FROM LibraryEx
-$EXTERN Inc, Dec;
+$EXTERN Inc, Dec, Map;
 
 /*
-    <Lexem-Pos e.Lines> == t.Token*
-    e.Lines ::= e.Line*
-    e.Line ::= (s.Sym*)
+    e.Lines ::= t.Line*
+    t.Line ::= (s.Sym*)
     t.Token ::=
-          '<'
-        | '>'
-        | (Nterm t.Fragment t.Lexem)
-        | (Term t.Fragment t.Lexem)
     t.Fragment ::= (t.StartPos t.EndPos)
     t.StartPos ::= t.Pos
     t.EndPos ::= t.Pos
     t.Pos ::= (s.Line s.Col)
-    t.Lexem ::= s.Char+
+    t.Lexem ::= (s.Char+)
+
+    s.Bool ::= TRUE | FALSE
 */
+
+/* <Lexem-Pos e.Lines> == t.Token* */
 $ENTRY Lexer {
     e.Lines = <Lexer-Pos (1 1) e.Lines>;
 }
 
-/*
-    <Lexem-Pos (s.Line s.Col) e.Lines> == t.Token*
-    e.Lines ::= e.Line*
-    e.Line ::= (s.Sym*)
-    t.Token ::=
-          '<'
-        | '>'
-        | (Nterm t.Fragment t.Lexem)
-        | (Term t.Fragment t.Lexem)
-    t.Fragment ::= (t.StartPos t.EndPos)
-    t.StartPos ::= t.Pos
-    t.EndPos ::= t.Pos
-    t.Pos ::= (s.Line s.Col)
-    t.Lexem ::= s.Char+
-*/
+/* <Count e.Element*> ::= s.Count */
+Count {
+    /* пусто */ = 0;
+    t._ e.Elements = <Inc <Count e.Elements>>;
+}
+
+/* <Join (e.Sep) e.Lines> ::= e.Sym* */
+Join {
+    (e.Sep) = /* пусто */;
+    (e.Sep) t.Line = t.Line;
+    (e.Sep) (e.Line) e.Lines = e.Line e.Sep <Join (e.Sep) e.Lines>
+}
+
+/* <Or s.Bool*> ::= s.Bool */
+Or {
+    e._ TRUE e._ = TRUE;
+    e._ = FALSE;
+}
+
+/* <And s.Bool*> ::= s.Bool */
+And {
+    e._ FALSE e._ = FALSE;
+    e._ = TRUE;
+}
+
+/* <CharEQ s.Sym s.Sym> ::= s.Bool */
+CharEQ {
+    s.Left s.Right
+        , <Compare <Ord s.Left> <Ord s.Right>> : {
+            '+' = FALSE;
+            '0' = TRUE;
+            '-' = FALSE;
+        };
+}
+
+/* <CharLE s.Sym s.Sym> ::= s.Bool */
+CharLE {
+    s.Left s.Right
+        , <Compare <Ord s.Left> <Ord s.Right>> : {
+            '+' = FALSE;
+            '0' = TRUE;
+            '-' = TRUE;
+        };
+}
+
+/* <CharGE s.Sym s.Sym> ::= s.Bool */
+CharGE {
+    s.Left s.Right
+        , <Compare <Ord s.Left> <Ord s.Right>> : {
+            '+' = TRUE;
+            '0' = TRUE;
+            '-' = FALSE;
+        };
+}
+
+/* <IsDigit s.Sym> ::= s.Bool */
+IsDigit {
+    s.Sym = <And <CharGE s.Sym '0'> <CharLE s.Sym '9'>>;
+}
+
+/* <IsAlpha s.Sym> ::= TRUE | FALSE */
+IsAlpha {
+    s.LwSym
+        , <Upper s.LwSym> : s.Sym
+        = <And <CharGE s.Sym 'A'> <CharLE s.Sym 'Z'>>;
+}
+
+/* <Lexem-Pos (s.Line s.Col) e.Lines> == t.Token* */
 Lexer-Pos {
     (s.Line s.Col) = /* пусто */;
 
@@ -44,41 +96,132 @@ Lexer-Pos {
     (s.Line s.Col) ('\t' e.Syms) e.Lines = <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
     (s.Line s.Col) () e.Lines = <Lexer-Pos (<Inc s.Line> 1) e.Lines>;
 
-    /* Comment ::= \'.*\n */
-    (s.Line s.Col) ('\'' e._) e.Lines = <Lexer-Pos (<Inc s.Line> 1) e.Lines>;
+    /* Comment ::= {.*} */
+    (s.Line s.Col) ('{' e.Inf '}' e.Postf) e.Lines
+        = <Lexer-Pos (s.Line <Add <Count e.Inf> 3>) (e.Postf) e.Lines>;
+    (s.Line s.Col) ('{' e.Postf) e.Inf (e.Pref '}' e.Postf2) e.Lines
+        = <Lexer-Pos (<Add s.Line <Add <Count e.Inf> 1>> <Add <Count e.Pref> 2>)
+            (e.Postf2) e.Lines>;
+    
+    /* Comment ::= (*.**) */
+    (s.Line s.Col) ('(*' e.Inf '*)' e.Postf) e.Lines
+        = <Lexer-Pos (s.Line <Add <Count e.Inf> 5>) (e.Postf) e.Lines>;
+    (s.Line s.Col) ('(*' e.Postf) e.Inf (e.Pref '*)' e.Postf2) e.Lines
+        = <Lexer-Pos (<Add s.Line <Add <Count e.Inf> 1>> <Add <Count e.Pref> 3>)
+            (e.Postf2) e.Lines>;
 
-    (s.Line s.Col) ('<' e.Syms) e.Lines =
-        ('<' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+    /* UNAR_SIGN ::= [+-] */
+    (s.Line s.Col) ('+' e.Syms) e.Lines =
+        (UNAR_SIGN ((s.Line s.Col) (s.Line <Inc s.Col>)) '+')
         <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
-    (s.Line s.Col) ('>' e.Syms) e.Lines =
-        ('>' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+    (s.Line s.Col) ('-' e.Syms) e.Lines =
+        ('-' ((s.Line s.Col) (s.Line <Inc s.Col>)) '-')
         <Lexer-Pos (s.Line <Inc s.Col>) (e.Syms) e.Lines>;
 
-    (s.Line s.Col) (s.Sym e.Syms) e.Lines
-        , <Compare <Ord <Lower s.Sym>> <Dec <Ord 'a'>>> : {
-            '+', <Compare <Ord <Lower s.Sym>> <Inc <Ord 'z'>>> : {
-                '-' = Nterm <Lexem (s.Line s.Col) s.Sym e.Syms>;
-                e._ = Term <Lexem (s.Line s.Col) s.Sym e.Syms>;
+    /* CHAR_SEQUENCE ::= (?<=\')[^\']+(?=\') */
+    (s.Line s.Col) ('\'' e.Postf) e.Inf (e.Pref '\'' e.Postf2) e.Lines
+        , <Add s.Line <Add <Count e.Inf> 1>> <Add <Count e.Pref> 1> : s.Line_ s.Col_
+        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+            (CHAR_SEQUENCE
+                ((s.Line <Inc s.Col>) (s.Line_ s.Col_))
+                (<Join ('\n') (e.Postf) e.Inf (e.Pref)>))
+            ('\'' ((s.Line_ s.Col_) (s.Line_ <Inc s.Col_>)))
+            <Lexer-Pos (s.Line_ <Inc s.Col_>) (e.Postf2) e.Lines>;
+    (s.Line s.Col) ('\'' e.Inf '\'' e.Postf) e.Lines
+        , <Add s.Col <Add <Count e.Inf> 1>> : s.Col_
+        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
+            (CHAR_SEQUENCE
+                ((s.Line <Inc s.Col>) (s.Line s.Col_))
+                (e.Inf))
+            ('\'' ((s.Line s.Col_) (s.Line <Inc s.Col_>)))
+            <Lexer-Pos (s.Line <Inc s.Col_>) (e.Postf) e.Lines>;
+
+    /*
+        UNSINGNED_NUMBER ::= [0-9]+(\.[0-9]+)?(E[+-]?[0-9]+)?
+        IDENTIFIER ::= [a-zA-Z][a-zA-Z0-9]*
+        CHAR ::= .
+    */
+    (s.Line s.Col) (s.LwSym e.LwSyms) e.Lines
+        , <Upper s.LwSym> : s.Sym
+        , <Map Upper e.LwSyms> : e.Syms
+        , <IsDigit s.Sym> : {
+            TRUE, <ReadNum (s.Col) s.Sym e.Syms> : e.Lexem_ (s.Col_) e.Syms_
+                = UNSINGNED_NUMBER ((e.Lexem_)) (s.Col_) e.Syms_;
+            FALSE, <IsAlpha s.Sym> : {
+                TRUE, <ReadIdent (s.Col) s.Sym e.Syms> : e.Lexem_ (s.Col_) e.Syms_
+                    , e.Lexem_ : {
+                        'INTEGER' = KW_INTEGER;
+                        'BOOLEAN' = KW_BOOLEAN;
+                        'REAL' = KW_REAL;
+                        'CHAR' = KW_CHAR;
+                        'TEXT' = KW_TEXT;
+                        'PACKED' = KW_PACKED;
+                        'ARRAY' = KW_ARRAY;
+                        'OF' = KW_OF;
+                        'FILE' = KW_FILE;
+                        'SET' = KW_SET;
+                        'RECORD' = KW_RECORD;
+                        'END' = KW_END;
+                        'CASE' = KW_CASE;
+                        'CONST' = KW_CONST;
+                        'TYPE' = KW_TYPE;
+                        e._ = IDENTIFIER e.Lexem_;
+                    } : t.LexemType_ e.Lexem__
+                    = t.LexemType_ ((e.Lexem__)) (s.Col_) e.Syms_;
+                FALSE = s.Sym () (<Inc s.Col>) e.Syms;
             };
-            e._ = Term <Lexem (s.Line s.Col) s.Sym e.Syms>;
-        } : s.LexemType t.Lexem (s.Line_ s.Col_) e.Syms_
-        = (s.LexemType ((s.Line s.Col) (s.Line_ s.Col_)) t.Lexem)
-            <Lexer-Pos (s.Line_ s.Col_) (e.Syms_) e.Lines>;
+        } : s.LexemType (e.Lexem) (s.Col__) e.Syms__
+        = (s.LexemType ((s.Line s.Col) (s.Line s.Col__)) e.Lexem)
+            <Lexer-Pos (s.Line s.Col__) (e.Syms__) e.Lines>;
 }
 
-/*
-    <Lexem (s.Line s.Col) e.Syms> == t.Lexem (s.Line_ s.Col_) e.Syms_
-    t.Lexem ::= s.Char*
-*/
-Lexem {
-    (s.Line s.Col) = () (s.Line s.Col);
-    (s.Line s.Col) ' ' e.Syms = () (s.Line s.Col) ' ' e.Syms;
-    (s.Line s.Col) '\r' e.Syms = () (s.Line s.Col) '\r' e.Syms;
-    (s.Line s.Col) '\t' e.Syms = () (s.Line s.Col) '\t' e.Syms;
-    (s.Line s.Col) '<' e.Syms = () (s.Line s.Col) '<' e.Syms;
-    (s.Line s.Col) '>' e.Syms = () (s.Line s.Col) '>' e.Syms;
+/* <ReadNum (s.Col) e.Syms> == e.Lexem (s.Col) e.Syms */
+ReadNum {
+    (s.Col) e.Syms
+        , <ReadDigits (s.Col) e.Syms> : e.Int (s.Col_) e.Syms_
+        , <ReadNumDot (s.Col_) e.Syms_> : e.Dot (s.Col__) e.Syms__
+        = e.Int e.Dot <ReadNumExp (s.Col__) e.Syms__>;
+}
+ReadDigits {
+    (s.Col) = (s.Col);
+    (s.Col) s.Sym e.Syms
+        , <IsDigit s.Sym> : {
+            TRUE = s.Sym <ReadDigits (<Inc s.Col>) e.Syms>;
+            FALSE = (s.Col) s.Sym e.Syms;
+        }
+}
+ReadNumDot {
+    (s.Col) '.' s.Sym e.Syms
+        , <IsDigit s.Sym> : {
+            TRUE = '.' <ReadDigits (<Inc s.Col>) s.Sym e.Syms>;
+            FALSE = (s.Col) '.' s.Sym e.Syms;
+        };
+    (s.Col) e.Syms = (s.Col) e.Syms;
+}
+ReadNumSign {
+    (s.Col) '+' e.Syms = '+' (<Inc s.Col>) e.Syms;
+    (s.Col) '-' e.Syms = '-' (<Inc s.Col>) e.Syms;
+    (s.Col) e.Syms = (s.Col) e.Syms;
+}
+ReadNumExp {
+    (s.Col) 'E' s.Sym e.Syms
+        , <ReadNumSign (<Inc s.Col>) s.Sym e.Syms> : {
+            e.Sign (s.Col_) s.Sym_ e.Syms_
+                , <IsDigit s.Sym_> : {
+                    TRUE = 'E' e.Sign <ReadDigits (s.Col_) s.Sym_ e.Syms_>;
+                    FALSE = (s.Col) 'E' e.Sign s.Sym_ e.Syms_;
+                };
+            e.Sign (s.Col_) = (s.Col) 'E' e.Sign;
+        };
+    (s.Col) e.Syms = (s.Col) e.Syms;
+}
 
-    (s.Line s.Col) s.Sym e.Syms
-        , <Lexem (s.Line s.Col) e.Syms> : (e.Lexem) (s.Line_ s.Col_) e.Syms_
-        = (s.Sym e.Lexem) (s.Line_ <Inc s.Col_>) e.Syms_;
+/* <ReadIdent (s.Col) e.Syms> == e.Lexem (s.Col) e.Syms */
+ReadIdent {
+    (s.Col) = (s.Col);
+    (s.Col) s.Sym e.Syms
+        , <Or <IsAlpha s.Sym> <IsDigit s.Sym>> : {
+            TRUE = s.Sym <ReadIdent (<Inc s.Col>) e.Syms>;
+            FALSE = (s.Col) s.Sym e.Syms;
+        }
 }

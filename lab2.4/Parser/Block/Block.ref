@@ -1,0 +1,43 @@
+*$FROM Parser/Block/BlockConstSequence
+*$FROM Parser/Block/BlockTypeSequence
+$EXTERN BlockConstSequence, BlockTypeSequence;
+
+Block {
+    /* Block -> KW_CONST BlockConstSequence Block */
+    () (KW_CONST e.C) e.Tokens t.Errs
+        = <Block ((KW_CONST e.C)) e.Tokens t.Errs>;
+
+    ((KW_CONST e.C)) (BlockConstSequence e.B) e.Tokens t.Errs
+        = <Block ((KW_CONST e.C) (BlockConstSequence e.B)) e.Tokens t.Errs>;
+    ((KW_CONST e.C)) e.Tokens t.Errs
+        = <Block ((KW_CONST e.C)) <BlockConstSequence () e.Tokens t.Errs>>;
+    
+    ((KW_CONST e.C) t.BS) (Block e.B) e.Tokens t.Errs
+        = <Block ((KW_CONST e.C) t.BS (Block e.B)) e.Tokens t.Errs>;
+    ((KW_CONST e.C) t.BS) e.Tokens t.Errs
+        = <Block ((KW_CONST e.C) t.BS) <Block () e.Tokens t.Errs>>;
+    
+    ((KW_CONST e.C) t.BS t.B) e.Tokens t.Errs
+        = (Block (KW_CONST BlockConstSequence Block) (KW_CONST e.C) t.BS t.B) e.Tokens t.Errs;
+    
+    /* Block -> KW_TYPE BlockTypeSequence Block */
+    () (KW_TYPE e.T) e.Tokens t.Errs
+        = <Block ((KW_TYPE e.T)) e.Tokens t.Errs>;
+
+    ((KW_TYPE e.T)) (BlockTypeSequence e.B) e.Tokens t.Errs
+        = <Block ((KW_TYPE e.T) (BlockTypeSequence e.B)) e.Tokens t.Errs>;
+    ((KW_TYPE e.T)) e.Tokens t.Errs
+        = <Block ((KW_TYPE e.T)) <BlockTypeSequence () e.Tokens t.Errs>>;
+    
+    ((KW_TYPE e.T) t.BS) (Block e.B) e.Tokens t.Errs
+        = <Block ((KW_TYPE e.T) t.BS (Block e.B)) e.Tokens t.Errs>;
+    ((KW_TYPE e.T) t.BS) e.Tokens t.Errs
+        = <Block ((KW_TYPE e.T) t.BS) <Block () e.Tokens t.Errs>>;
+    
+    ((KW_TYPE e.T) t.BS t.B) e.Tokens t.Errs
+        = (Block (KW_CONST BlockTypeSequence Block) (KW_TYPE e.T) t.BS t.B) e.Tokens t.Errs;
+    
+    /* Block -> ε */
+    () e.Tokens t.Errs
+        = (Block ()) e.Tokens t.Errs;
+}

@@ -1,0 +1,22 @@
+*$FROM Parser/Block/BlockType
+$EXTERN BlockType;
+
+BlockTypeSequence {
+    /* BlockTypeSequence -> BlockType BlockTypeSequence */
+    () (BlockType e.B) e.Tokens t.Errs
+        = <BlockTypeSequence ((BlockType e.B)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <BlockTypeSequence () <BlockType () e.Tokens t.Errs>>;
+
+    (t.B) (BlockTypeSequence e.BS) e.Tokens t.Errs
+        = <BlockTypeSequence (t.B (BlockTypeSequence e.BS)) e.Tokens t.Errs>;
+    (t.B) (IDENTIFIER e.I) e.Tokens t.Errs
+        = <BlockTypeSequence (t.B) <BlockTypeSequence () (IDENTIFIER e.I) e.Tokens t.Errs>>;
+    
+    (t.B t.BS) e.Tokens t.Errs
+        = (BlockTypeSequence (BlockType BlockTypeSequence) (t.B t.BS)) e.Tokens t.Errs;
+    
+    /* BlockTypeSequence -> BlockType */
+    (t.B) e.Tokens t.Errs
+        = (BlockTypeSequence (BlockType) t.B) e.Tokens t.Errs;
+}

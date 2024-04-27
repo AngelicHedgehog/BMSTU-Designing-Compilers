@@ -1,0 +1,22 @@
+*$FROM Parser/Block/BlockConst
+$EXTERN BlockConst;
+
+BlockConstSequence {
+    /* BlockConstSequence -> BlockConst BlockConstSequence */
+    () (BlockConst e.B) e.Tokens t.Errs
+        = <BlockConstSequence ((BlockConst e.B)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <BlockConstSequence () <BlockConst () e.Tokens t.Errs>>;
+
+    (t.B) (BlockConstSequence e.BS) e.Tokens t.Errs
+        = <BlockConstSequence (t.B (BlockConstSequence e.BS)) e.Tokens t.Errs>;
+    (t.B) (IDENTIFIER e.I) e.Tokens t.Errs
+        = <BlockConstSequence (t.B) <BlockConstSequence () (IDENTIFIER e.I) e.Tokens t.Errs>>;
+    
+    (t.B t.BS) e.Tokens t.Errs
+        = (BlockConstSequence (BlockConst BlockConstSequence) (t.B t.BS)) e.Tokens t.Errs;
+    
+    /* BlockConstSequence -> BlockConst */
+    (t.B) e.Tokens t.Errs
+        = (BlockConstSequence (BlockConst) t.B) e.Tokens t.Errs;
+}

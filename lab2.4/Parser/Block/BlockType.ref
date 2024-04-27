@@ -1,0 +1,28 @@
+*$FROM Parser/Type/Type
+$EXTERN Type;
+
+BlockType {
+    /* BlockType -> IDENTIFIER '=' Type ';' */
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <BlockType ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+
+    (t.I) ('=' e.E) e.Tokens t.Errs
+        = <BlockType (t.I ('=' e.E)) e.Tokens t.Errs>;
+
+    (t.I t.E) (Type e.C) e.Tokens t.Errs
+        = <BlockType (t.I t.E (Type e.C)) e.Tokens t.Errs>;
+    (t.I t.E) e.Tokens t.Errs
+        = <BlockType (t.I t.E) <Type () e.Tokens t.Errs>>;
+    
+    (t.I t.E t.C) (';' e.S) e.Tokens t.Errs
+        = <BlockType (t.I t.E t.C (';' e.S)) e.Tokens t.Errs>;
+    
+    (t.I t.E t.C t.S) e.Tokens t.Errs
+        = (BlockType (IDENTIFIER '=' Type ';') t.I t.E t.C t.S) e.Tokens t.Errs;
+    
+    (e.Scanned) '$' (ERR e.Errs)
+        = () '$' (ERR e.Errs (Unexpected EOF in BlockType));
+    (e.Scanned) t.Token e.Tokens (ERR e.Errs)
+        = <BlockType (e.Scanned) e.Tokens
+            (ERR e.Errs (Unexpected t.Token in BlockType))>;
+}

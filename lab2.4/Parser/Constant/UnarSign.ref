@@ -1,4 +1,4 @@
-UnarSign {
+$ENTRY UnarSign {
     /* UnarSign -> '+' */
     () ('+' e.P) e.Tokens t.Errs
         = <UnarSign (('+' e.P)) e.Tokens t.Errs>;

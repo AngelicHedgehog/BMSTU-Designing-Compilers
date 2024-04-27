@@ -1,4 +1,4 @@
-ConstantIdentifier {
+$ENTRY ConstantIdentifier {
     /* ConstantIdentifier -> IDENTIFIER */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <ConstantIdentifier ((IDENTIFIER e.I)) e.Tokens t.Errs>;

@@ -3,7 +3,7 @@
 *$FROM Parser/Constant/Constant
 $EXTERN TypeIdentifier, IdentifierList, Constant;
 
-SimpleType {
+$ENTRY SimpleType {
     /* SimpleType -> TypeIdentifier */
     () (TypeIdentifier e.T) e.Tokens t.Errs
         = <SimpleType ((TypeIdentifier e.T)) e.Tokens t.Errs>;

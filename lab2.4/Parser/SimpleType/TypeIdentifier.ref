@@ -1,7 +1,7 @@
 *$FROM Parser/SimpleType/CommonTypeIdentifier
 $EXTERN CommonTypeIdentifier;
 
-TypeIdentifier {
+$ENTRY TypeIdentifier {
     /* TypeIdentifier -> IDENTIFIER */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <TypeIdentifier ((IDENTIFIER e.I)) e.Tokens t.Errs>;

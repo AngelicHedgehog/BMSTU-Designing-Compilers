@@ -1,7 +1,7 @@
 *$FROM Parser/Constant/Constant
 $EXTERN Constant;
 
-BlockConst {
+$ENTRY BlockConst {
     /* BlockConst -> IDENTIFIER '=' Constant ';' */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <BlockConst ((IDENTIFIER e.I)) e.Tokens t.Errs>;

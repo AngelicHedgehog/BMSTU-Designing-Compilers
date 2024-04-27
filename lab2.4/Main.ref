@@ -9,7 +9,7 @@ $ENTRY Go {
 
 Main {
     (e.ProgName) (e.InputFile)
-        /** /, <Lexer <LoadFile e.InputFile>> : e.Tokens
+        /**/, <Lexer <LoadFile e.InputFile>> : e.Tokens
         = <Map Prout e.Tokens>/*/
         , <Parse e.Tokens> : t.ParseTree (ERR e.Errors)
         = <Print-ParseTree () t.ParseTree>

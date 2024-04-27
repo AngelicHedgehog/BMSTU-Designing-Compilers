@@ -1,7 +1,7 @@
 *$FROM Parser/Type/Type
-$EXTERN Type;
+$EXTERN Type_;
 
-BlockType {
+$ENTRY BlockType {
     /* BlockType -> IDENTIFIER '=' Type ';' */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <BlockType ((IDENTIFIER e.I)) e.Tokens t.Errs>;
@@ -12,7 +12,7 @@ BlockType {
     (t.I t.E) (Type e.C) e.Tokens t.Errs
         = <BlockType (t.I t.E (Type e.C)) e.Tokens t.Errs>;
     (t.I t.E) e.Tokens t.Errs
-        = <BlockType (t.I t.E) <Type () e.Tokens t.Errs>>;
+        = <BlockType (t.I t.E) <Type_ () e.Tokens t.Errs>>;
     
     (t.I t.E t.C) (';' e.S) e.Tokens t.Errs
         = <BlockType (t.I t.E t.C (';' e.S)) e.Tokens t.Errs>;

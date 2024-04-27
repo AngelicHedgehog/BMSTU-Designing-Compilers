@@ -2,7 +2,7 @@
 *$FROM Parser/FieldList/FieldList
 $EXTERN ConstantList, FieldList;
 
-CaseVariant {
+$ENTRY CaseVariant {
     /* CaseVariant -> ConstantList ':' '(' FieldList ')' */
     () (ConstantList e.C) e.Tokens t.Errs
         = <CaseVariant ((ConstantList e.C)) e.Tokens t.Errs>;

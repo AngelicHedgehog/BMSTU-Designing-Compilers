@@ -2,7 +2,7 @@
 *$FROM Parser/Constant/ConstantIdentifier
 $EXTERN UnarSign, ConstantIdentifier;
 
-Constant {
+$ENTRY Constant {
     /* Constant -> UnarSign ConstantIdentifier */
     () (UnarSign e.U) e.Tokens t.Errs
         = <Constant ((UnarSign e.U)) e.Tokens t.Errs>;

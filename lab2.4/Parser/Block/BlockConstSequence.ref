@@ -1,7 +1,7 @@
 *$FROM Parser/Block/BlockConst
 $EXTERN BlockConst;
 
-BlockConstSequence {
+$ENTRY BlockConstSequence {
     /* BlockConstSequence -> BlockConst BlockConstSequence */
     () (BlockConst e.B) e.Tokens t.Errs
         = <BlockConstSequence ((BlockConst e.B)) e.Tokens t.Errs>;

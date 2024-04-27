@@ -1,7 +1,7 @@
 *$FROM Parser/Block/BlockType
 $EXTERN BlockType;
 
-BlockTypeSequence {
+$ENTRY BlockTypeSequence {
     /* BlockTypeSequence -> BlockType BlockTypeSequence */
     () (BlockType e.B) e.Tokens t.Errs
         = <BlockTypeSequence ((BlockType e.B)) e.Tokens t.Errs>;

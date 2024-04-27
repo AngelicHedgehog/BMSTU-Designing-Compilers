@@ -1,7 +1,7 @@
 *$FROM Parser/SimpleType/SimpleType
 $EXTERN SimpleType;
 
-SimpleTypeList {
+$ENTRY SimpleTypeList {
     /* SimpleTypeList -> SimpleType ',' SimpleTypeList */
     () (SimpleType e.S) e.Tokens t.Errs
         = <SimpleTypeList ((SimpleType e.S)) e.Tokens t.Errs>;

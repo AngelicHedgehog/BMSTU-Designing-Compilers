@@ -1,7 +1,7 @@
 *$FROM Parse/FieldList/CaseVariant
 $EXTERN CaseVariant;
 
-CaseVariantSequence {
+$ENTRY CaseVariantSequence {
     /* CaseVariantSequence -> CaseVariant ';' CaseVariantSequence */
     () (CaseVariant e.C) e.Tokens t.Errs
         = <CaseVariantSequence ((CaseVariant e.C)) e.Tokens t.Errs>;

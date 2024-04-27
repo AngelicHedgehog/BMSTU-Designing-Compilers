@@ -3,51 +3,51 @@
 *$FROM Parser/SimpleType/SimpleType
 $EXTERN TypeIdentifier, TypeAfterPacked, SimpleType;
 
-Type {
+$ENTRY Type_ {
     /* Type -> '^' TypeIdentifier */
     () ('^' e.U) e.Tokens t.Errs
-        = <Type (('^' e.U)) e.Tokens t.Errs>;
+        = <Type_ (('^' e.U)) e.Tokens t.Errs>;
     
     (('^' e.U)) (TypeIdentifier e.T) e.Tokens t.Errs
-        = <Type (('^' e.U) (TypeIdentifier e.T)) e.Tokens t.Errs>;
+        = <Type_ (('^' e.U) (TypeIdentifier e.T)) e.Tokens t.Errs>;
     (('^' e.U)) e.Tokens t.Errs
-        = <Type (('^' e.U)) <TypeIdentifier () e.Tokens t.Errs>>;
+        = <Type_ (('^' e.U)) <TypeIdentifier () e.Tokens t.Errs>>;
     
     (('^' e.U) t.T) e.Tokens t.Errs
         = (Type ('^' TypeIdentifier) ('^' e.U) t.T) e.Tokens t.Errs;
     
     /* Type -> KW_PACKED TypeAfterPacked */
     () (KW_PACKED e.P) e.Tokens t.Errs
-        = <Type ((KW_PACKED e.P)) e.Tokens t.Errs>;
+        = <Type_ ((KW_PACKED e.P)) e.Tokens t.Errs>;
     
     ((KW_PACKED e.P)) (TypeAfterPacked e.T) e.Tokens t.Errs
-        = <Type ((KW_PACKED e.P) (TypeAfterPacked e.T)) e.Tokens t.Errs>;
+        = <Type_ ((KW_PACKED e.P) (TypeAfterPacked e.T)) e.Tokens t.Errs>;
     ((KW_PACKED e.P)) e.Tokens t.Errs
-        = <Type (KW_PACKED e.P) <TypeAfterPacked e.Tokens t.Errs>>;
+        = <Type_ (KW_PACKED e.P) <TypeAfterPacked e.Tokens t.Errs>>;
     
     ((KW_PACKED) t.T) e.Tokens t.Errs
         = (Type (KW_PACKED TypeAfterPacked) (KW_PACKED) t.T) e.Tokens t.Errs;
     
     /* Type -> TypeAfterPacked */
     () (TypeAfterPacked e.T) e.Tokens t.Errs
-        = <Type ((TypeAfterPacked e.T)) e.Tokens t.Errs>;
+        = <Type_ ((TypeAfterPacked e.T)) e.Tokens t.Errs>;
     () (KW_ARRAY e.A) e.Tokens t.Errs
-        = <Type () <TypeAfterPacked (KW_ARRAY e.A) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked (KW_ARRAY e.A) e.Tokens t.Errs>>;
     () (KW_FILE e.F) e.Tokens t.Errs
-        = <Type () <TypeAfterPacked (KW_ARRAY e.F) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked (KW_ARRAY e.F) e.Tokens t.Errs>>;
     () (KW_SET e.S) e.Tokens t.Errs
-        = <Type () <TypeAfterPacked (KW_ARRAY e.S) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked (KW_ARRAY e.S) e.Tokens t.Errs>>;
     () (KW_RECORD e.R) e.Tokens t.Errs
-        = <Type () <TypeAfterPacked (KW_ARRAY e.R) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked (KW_ARRAY e.R) e.Tokens t.Errs>>;
     
     ((TypeAfterPacked e.T)) e.Tokens t.Errs
         = (Type (TypeAfterPacked) (TypeAfterPacked e.T)) e.Tokens t.Errs;
     
     /* Type -> SimpleType */
     () (SimpleType e.S) e.Tokens t.Errs
-        = <Type ((SimpleType e.S)) e.Tokens t.Errs>;
+        = <Type_ ((SimpleType e.S)) e.Tokens t.Errs>;
     () e.Tokens t.Errs
-        = <Type () <SimpleType e.Tokens t.Errs>>;
+        = <Type_ () <SimpleType e.Tokens t.Errs>>;
     
     ((SimpleType e.S)) e.Tokens t.Errs
         = (Type (SimpleType) (SimpleType e.S)) e.Tokens t.Errs;

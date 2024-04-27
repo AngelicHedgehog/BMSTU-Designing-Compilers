@@ -1,4 +1,4 @@
-IdentifierList {
+$ENTRY IdentifierList {
     /* IdentifierList -> IDENTIFIER ',' IdentifierList */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <IdentifierList ((IDENTIFIER e.I)) e.Tokens t.Errs>;

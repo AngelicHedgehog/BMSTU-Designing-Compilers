@@ -2,7 +2,7 @@
 *$FROM Parser/FieldList/CaseVariantSequence
 $EXTERN TypeIdentifier, CaseVariantSequence;
 
-CaseBlock {
+$ENTRY CaseBlock {
     /* CaseBlock -> KW_CASE IDENTIFIER ':' TypeIdentifier KW_OF CaseVariantSequence */
     () (KW_CASE e.C) e.Tokens t.Errs
         = <CaseBlock ((KW_CASE e.C)) e.Tokens t.Errs>;

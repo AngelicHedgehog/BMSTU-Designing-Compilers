@@ -2,7 +2,7 @@
 *$FROM Parser/Block/BlockTypeSequence
 $EXTERN BlockConstSequence, BlockTypeSequence;
 
-Block {
+$ENTRY Block {
     /* Block -> KW_CONST BlockConstSequence Block */
     () (KW_CONST e.C) e.Tokens t.Errs
         = <Block ((KW_CONST e.C)) e.Tokens t.Errs>;

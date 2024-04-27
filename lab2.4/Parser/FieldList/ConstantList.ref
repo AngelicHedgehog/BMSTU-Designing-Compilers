@@ -1,7 +1,7 @@
 *$FROM Parse/Constant/Constant
 $EXTERN Constant;
 
-ConstantList {
+$ENTRY ConstantList {
     /* ConstantList -> Constant ',' ConstantList */
     () (Constant e.C) e.Tokens t.Errs
         = <ConstantList ((Constant e.C)) e.Tokens t.Errs>;

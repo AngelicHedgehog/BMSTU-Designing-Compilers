@@ -1,7 +1,7 @@
 *$FROM Parser/FieldList/IdentifierWithTypeList
 $EXTERN IdentifierWithTypeList;
 
-FieldList {
+$ENTRY FieldList {
     /* FieldList -> IdentifierWithTypeList ';' */
     () (IdentifierWithTypeList e.I) e.Tokens t.Errs
         = <FieldList ((IdentifierWithTypeList e.I)) e.Tokens t.Errs>;

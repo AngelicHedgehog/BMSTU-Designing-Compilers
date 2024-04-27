@@ -1,7 +1,7 @@
 *$FROM Parser/Block/Block
 $EXTERN Block;
 
-Program {
+$ENTRY Program {
     /* Program -> Block */
     () (Block e.B) e.Tokens t.Errs
         = <Program ((Block e.B)) e.Tokens t.Errs>;

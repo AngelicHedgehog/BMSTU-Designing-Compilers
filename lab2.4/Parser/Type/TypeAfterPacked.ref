@@ -2,9 +2,9 @@
 *$FROM Parser/Type/Type
 *$FROM Parser/SimpleType/SimpleType
 *$FROM Parser/FieldList/FieldList
-$EXTERN SimpleTypeList, Type, SimpleType, FieldList;
+$EXTERN SimpleTypeList, Type_, SimpleType, FieldList;
 
-TypeAfterPacked {
+$ENTRY TypeAfterPacked {
     /* TypeAfterPacked -> KW_ARRAY SimpleTypeList KW_OF Type */
     () (KW_ARRAY e.A) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_ARRAY e.A)) e.Tokens t.Errs>;
@@ -20,7 +20,7 @@ TypeAfterPacked {
     ((KW_ARRAY e.A) t.S t.O) (Type e.T) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O (Type e.T)) e.Tokens t.Errs>;
     ((KW_ARRAY e.A) t.S t.O) e.Tokens t.Errs
-        = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O) <Type () e.Tokens t.Errs>>;
+        = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O) <Type_ () e.Tokens t.Errs>>;
     
     ((KW_ARRAY e.A) t.S t.O t.T) e.Tokens t.Errs
         = (TypeAfterPacked (KW_ARRAY SimpleTypeList KW_OF Type) (KW_ARRAY e.A) t.S t.O t.T) e.Tokens t.Errs;
@@ -35,7 +35,7 @@ TypeAfterPacked {
     ((KW_FILE e.F) t.O) (Type e.T) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_FILE e.F) t.O (Type e.T)) e.Tokens t.Errs>;
     ((KW_FILE e.F) t.O) e.Tokens t.Errs
-        = <TypeAfterPacked ((KW_FILE e.F) t.O) <Type () e.Tokens t.Errs>>;
+        = <TypeAfterPacked ((KW_FILE e.F) t.O) <Type_ () e.Tokens t.Errs>>;
     
     ((KW_FILE e.F) t.O t.T) e.Tokens t.Errs
         = (TypeAfterPacked (KW_FILE KW_OF Type) (KW_FILE e.F) t.O t.T) e.Tokens t.Errs;

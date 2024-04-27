@@ -1,4 +1,4 @@
-CommonTypeIdentifier {
+$ENTRY CommonTypeIdentifier {
     /* CommonTypeIdentifier -> KW_INTEGER */
     () (KW_INTEGER e.I) e.Tokens t.Errs
         = <CommonTypeIdentifier ((KW_INTEGER e.I)) e.Tokens t.Errs>;

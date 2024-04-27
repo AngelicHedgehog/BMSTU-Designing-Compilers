@@ -19,10 +19,4 @@ $ENTRY BlockConst {
     
     (t.I t.E t.C t.S) e.Tokens t.Errs
         = (BlockConst (IDENTIFIER '=' Constant ';') t.I t.E t.C t.S) e.Tokens t.Errs;
-    
-    (e.Scanned) '$' (ERR e.Errs)
-        = () '$' (ERR e.Errs (Unexpected EOF in BlockConst));
-    (e.Scanned) t.Token e.Tokens (ERR e.Errs)
-        = <BlockConst (e.Scanned) e.Tokens
-            (ERR e.Errs (Unexpected t.Token in BlockConst))>;
 }

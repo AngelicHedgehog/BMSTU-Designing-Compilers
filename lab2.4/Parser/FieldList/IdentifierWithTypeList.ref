@@ -13,6 +13,11 @@ $ENTRY IdentifierWithTypeList {
     
     (t.I t.C) (IdentifierWithTypeList e.IL) e.Tokens t.Errs
         = <IdentifierWithTypeList (t.I t.C (IdentifierWithTypeList e.IL)) e.Tokens t.Errs>;
+    (t.I t.C) (IDENTIFIER e.ID) e.Tokens t.Errs
+        = <IdentifierWithTypeList (t.I t.C)
+            <IdentifierWithTypeList () (IDENTIFIER e.ID) e.Tokens t.Errs>>;
+    (t.I t.C) e.Tokens t.Errs
+        = (IdentifierWithTypeList (IdentifierWithType) t.I) t.C e.Tokens t.Errs;
     
     (t.I t.C t.IL) e.Tokens t.Errs
         = (IdentifierWithTypeList (IdentifierWithType ';' IdentifierWithTypeList) t.I t.C t.IL)

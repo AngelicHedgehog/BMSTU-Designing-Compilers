@@ -1,4 +1,4 @@
-*$FROM Parse/Constant/Constant
+*$FROM Parser/Constant/Constant
 $EXTERN Constant;
 
 $ENTRY ConstantList {

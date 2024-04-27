@@ -8,6 +8,6 @@ $ENTRY Program {
     () e.Tokens t.Errs
         = <Program () <Block () e.Tokens t.Errs>>;
 
-    (t.Block) e.Tokens t.Errs
-        = (Program (Block) t.Block) e.Tokens t.Errs;
+    (t.B) e.Tokens t.Errs
+        = (Program (Block) t.B) e.Tokens t.Errs;
 }

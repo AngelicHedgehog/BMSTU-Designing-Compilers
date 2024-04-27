@@ -101,8 +101,8 @@ BlockTypeSequence -> BlockType
 BlockType -> IDENTIFIER '=' Type ';'
 
 # field list
-FieldList -> IdentifierWithTypeList ';'
-           | IdentifierWithTypeList CaseBlock
+FieldList -> IdentifierWithTypeList
+           | IdentifierWithTypeList ';' CaseBlock
 IdentifierWithTypeList -> IdentifierWithType
                         | IdentifierWithType ';' IdentifierWithTypeList
 IdentifierWithType -> IdentifierList ':' Type

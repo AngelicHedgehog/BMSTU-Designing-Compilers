@@ -1,4 +1,4 @@
-*$FROM Parse/FieldList/CaseVariant
+*$FROM Parser/FieldList/CaseVariant
 $EXTERN CaseVariant;
 
 $ENTRY CaseVariantSequence {

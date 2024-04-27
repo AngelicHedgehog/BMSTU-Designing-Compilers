@@ -35,7 +35,7 @@ $ENTRY Block {
         = <Block ((KW_TYPE e.T) t.BS) <Block () e.Tokens t.Errs>>;
     
     ((KW_TYPE e.T) t.BS t.B) e.Tokens t.Errs
-        = (Block (KW_CONST BlockTypeSequence Block) (KW_TYPE e.T) t.BS t.B) e.Tokens t.Errs;
+        = (Block (KW_TYPE BlockTypeSequence Block) (KW_TYPE e.T) t.BS t.B) e.Tokens t.Errs;
     
     /* Block -> ε */
     () e.Tokens t.Errs

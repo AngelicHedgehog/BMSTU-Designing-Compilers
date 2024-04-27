@@ -137,7 +137,7 @@ Lexer-Pos {
             <Lexer-Pos (s.Line <Inc s.Col_>) (e.Postf) e.Lines>;
 
     /*
-        UNSINGNED_NUMBER ::= [0-9]+(\.[0-9]+)?(E[+-]?[0-9]+)?
+        UNSIGNED_NUMBER ::= [0-9]+(\.[0-9]+)?(E[+-]?[0-9]+)?
         IDENTIFIER ::= [a-zA-Z][a-zA-Z0-9]*
         CHAR ::= .
     */
@@ -146,7 +146,7 @@ Lexer-Pos {
         , <Map Upper e.LwSyms> : e.Syms
         , <IsDigit s.Sym> : {
             TRUE, <ReadNum (s.Col) s.Sym e.Syms> : e.Lexem_ (s.Col_) e.Syms_
-                = UNSINGNED_NUMBER ((e.Lexem_)) (s.Col_) e.Syms_;
+                = UNSIGNED_NUMBER ((e.Lexem_)) (s.Col_) e.Syms_;
             FALSE, <IsAlpha s.Sym> : {
                 TRUE, <ReadIdent (s.Col) s.Sym e.Syms> : e.Lexem_ (s.Col_) e.Syms_
                     , e.Lexem_ : {

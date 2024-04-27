@@ -23,7 +23,7 @@ $ENTRY Type_ {
     ((KW_PACKED e.P)) (TypeAfterPacked e.T) e.Tokens t.Errs
         = <Type_ ((KW_PACKED e.P) (TypeAfterPacked e.T)) e.Tokens t.Errs>;
     ((KW_PACKED e.P)) e.Tokens t.Errs
-        = <Type_ (KW_PACKED e.P) <TypeAfterPacked e.Tokens t.Errs>>;
+        = <Type_ (KW_PACKED e.P) <TypeAfterPacked () e.Tokens t.Errs>>;
     
     ((KW_PACKED) t.T) e.Tokens t.Errs
         = (Type (KW_PACKED TypeAfterPacked) (KW_PACKED) t.T) e.Tokens t.Errs;
@@ -32,13 +32,13 @@ $ENTRY Type_ {
     () (TypeAfterPacked e.T) e.Tokens t.Errs
         = <Type_ ((TypeAfterPacked e.T)) e.Tokens t.Errs>;
     () (KW_ARRAY e.A) e.Tokens t.Errs
-        = <Type_ () <TypeAfterPacked (KW_ARRAY e.A) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked () (KW_ARRAY e.A) e.Tokens t.Errs>>;
     () (KW_FILE e.F) e.Tokens t.Errs
-        = <Type_ () <TypeAfterPacked (KW_ARRAY e.F) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked () (KW_FILE e.F) e.Tokens t.Errs>>;
     () (KW_SET e.S) e.Tokens t.Errs
-        = <Type_ () <TypeAfterPacked (KW_ARRAY e.S) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked () (KW_SET e.S) e.Tokens t.Errs>>;
     () (KW_RECORD e.R) e.Tokens t.Errs
-        = <Type_ () <TypeAfterPacked (KW_ARRAY e.R) e.Tokens t.Errs>>;
+        = <Type_ () <TypeAfterPacked () (KW_RECORD e.R) e.Tokens t.Errs>>;
     
     ((TypeAfterPacked e.T)) e.Tokens t.Errs
         = (Type (TypeAfterPacked) (TypeAfterPacked e.T)) e.Tokens t.Errs;
@@ -47,7 +47,7 @@ $ENTRY Type_ {
     () (SimpleType e.S) e.Tokens t.Errs
         = <Type_ ((SimpleType e.S)) e.Tokens t.Errs>;
     () e.Tokens t.Errs
-        = <Type_ () <SimpleType e.Tokens t.Errs>>;
+        = <Type_ () <SimpleType () e.Tokens t.Errs>>;
     
     ((SimpleType e.S)) e.Tokens t.Errs
         = (Type (SimpleType) (SimpleType e.S)) e.Tokens t.Errs;

@@ -42,7 +42,7 @@ $ENTRY TypeAfterPacked {
     
     /* TypeAfterPacked -> KW_SET KW_OF SimpleType */
     () (KW_SET e.S) e.Tokens t.Errs
-        = <TypeAfterPacked ((KW_SET e.S) e.Tokens t.Errs)>;
+        = <TypeAfterPacked ((KW_SET e.S)) e.Tokens t.Errs>;
 
     ((KW_SET e.S)) (KW_OF e.O) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_SET e.S) (KW_OF e.O)) e.Tokens t.Errs>;
@@ -65,8 +65,8 @@ $ENTRY TypeAfterPacked {
         = <TypeAfterPacked ((KW_RECORD e.R)) <FieldList () e.Tokens t.Errs>>;
     
     ((KW_RECORD e.R) t.F) (KW_END e.E) e.Tokens t.Errs
-        = <TypeAfterPacked ((KW_RECORD e.R) t.F) (KW_END e.E) e.Tokens t.Errs>;
+        = <TypeAfterPacked ((KW_RECORD e.R) t.F (KW_END e.E)) e.Tokens t.Errs>;
     
     ((KW_RECORD e.R) t.F t.E) e.Tokens t.Errs
-        = <TypeAfterPacked (KW_RECORD FieldList KW_END) (KW_RECORD e.R) t.F t.E> e.Tokens t.Errs;
+        = (TypeAfterPacked (KW_RECORD FieldList KW_END) (KW_RECORD e.R) t.F t.E) e.Tokens t.Errs;
 }

@@ -14,7 +14,7 @@ $ENTRY BlockTypeSequence {
         = <BlockTypeSequence (t.B) <BlockTypeSequence () (IDENTIFIER e.I) e.Tokens t.Errs>>;
     
     (t.B t.BS) e.Tokens t.Errs
-        = (BlockTypeSequence (BlockType BlockTypeSequence) (t.B t.BS)) e.Tokens t.Errs;
+        = (BlockTypeSequence (BlockType BlockTypeSequence) t.B t.BS) e.Tokens t.Errs;
     
     /* BlockTypeSequence -> BlockType */
     (t.B) e.Tokens t.Errs

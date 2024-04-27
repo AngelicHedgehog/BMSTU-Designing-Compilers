@@ -9,12 +9,12 @@ $ENTRY Go {
 
 Main {
     (e.ProgName) (e.InputFile)
-        , <Lexer <LoadFile e.InputFile>> : e.Tokens
-        = <Map Prout e.Tokens>/*
+        /** /, <Lexer <LoadFile e.InputFile>> : e.Tokens
+        = <Map Prout e.Tokens>/*/
         , <Parse e.Tokens> : t.ParseTree (ERR e.Errors)
         = <Print-ParseTree () t.ParseTree>
           <Prout "\nERRORS:">
-          <Map {(e.Err) = <Prout 'Error: ' e.Err>;} e.Errors>;*/
+          <Map {(e.Err) = <Prout 'Error: ' e.Err>;} e.Errors>;/**/
 }
 
 Print-ParseTree {

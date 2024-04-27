@@ -1,1 +1,57 @@
-Constant {}
+*$FROM Parser/Constant/UnarSign
+*$FROM Parser/Constant/ConstantIdentifier
+$EXTERN UnarSign, ConstantIdentifier;
+
+Constant {
+    /* Constant -> UnarSign ConstantIdentifier */
+    () (UnarSign e.U) e.Tokens t.Errs
+        = <Constant ((UnarSign e.U)) e.Tokens t.Errs>;
+    () ('+' e.P) e.Tokens t.Errs
+        = <Constant () <UnarSign () ('+' e.P) e.Tokens t.Errs>>;
+    () ('+' e.M) e.Tokens t.Errs
+        = <Constant () <UnarSign () ('+' e.M) e.Tokens t.Errs>>;
+    
+    ((UnarSign e.U)) (ConstantIdentifier e.C) e.Tokens t.Errs
+        = <Constant ((UnarSign e.U) (ConstantIdentifier e.C)) e.Tokens t.Errs>;
+    ((UnarSign e.U)) (IDENTIFIER e.I) e.Tokens t.Errs
+        = <Constant ((UnarSign e.U)) <ConstantIdentifier () (IDENTIFIER e.I) e.Tokens t.Errs>>;
+    
+    ((UnarSign e.U) (ConstantIdentifier e.C)) e.Tokens t.Errs
+        = (Constant (UnarSign ConstantIdentifier) (UnarSign e.U) (ConstantIdentifier e.C)) e.Tokens t.Errs;
+    
+    /* Constant -> ConstantIdentifier */
+    () (ConstantIdentifier e.C) e.Tokens t.Errs
+        = <Constant ((ConstantIdentifier e.C)) e.Tokens t.Errs>;
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <Constant () <ConstantIdentifier () (IDENTIFIER e.I) e.Tokens t.Errs>>;
+
+    ((ConstantIdentifier e.C)) e.Tokens t.Errs
+        = (Constant (ConstantIdentifier) (ConstantIdentifier e.C)) e.Tokens t.Errs;
+
+    /* Constant -> UnarSign UNSIGNED_NUMBER */
+    ((UnarSign e.U)) (UNSIGNED_NUMBER e.UN) e.Tokens t.Errs
+        = <Constant ((UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs>;
+    
+    ((UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
+        = (Constant (UnarSign UNSIGNED_NUMBER) (UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
+    
+    /* Constant -> UNSIGNED_NUMBER */
+    () (UNSIGNED_NUMBER e.UN) e.Tokens t.Errs
+        = <Constant ((UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs>;
+
+    ((UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
+        = (Constant (UNSIGNED_NUMBER) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
+
+    /* Constant -> '\'' CHAR_SEQUENCE '\'' */
+    () ('\'' e.C1) e.Tokens t.Errs
+        = <Constant (('\'' e.C1)) e.Tokens t.Errs>;
+    
+    (('\'' e.C1)) (CHAR_SEQUENCE e.CS) e.Tokens t.Errs
+        = <Constant (('\'' e.C1) (CHAR_SEQUENCE e.CS)) e.Tokens t.Errs>;
+    
+    (('\'' e.C1) t.CS) ('\'' e.C2) e.Tokens t.Errs
+        = <Constant (('\'' e.C1) t.CS ('\'' e.C2)) e.Tokens t.Errs>;
+    
+    (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs
+        = (Constant ('\'' CHAR_SEQUENCE '\'') (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs) e.Tokens t.Errs;
+}

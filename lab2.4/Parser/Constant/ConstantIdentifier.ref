@@ -1,1 +1,8 @@
-ConstantIdentifier {}
+ConstantIdentifier {
+    /* ConstantIdentifier -> IDENTIFIER */
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <ConstantIdentifier ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+    
+    (t.I) e.Tokens t.Errs
+        = (ConstantIdentifier (IDENTIFIER) t.I) e.Tokens t.Errs;
+}

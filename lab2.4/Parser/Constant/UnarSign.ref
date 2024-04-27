@@ -1,1 +1,15 @@
-UnarSign {}
+UnarSign {
+    /* UnarSign -> '+' */
+    () ('+' e.P) e.Tokens t.Errs
+        = <UnarSign (('+' e.P)) e.Tokens t.Errs>;
+    
+    (('+' e.P)) e.Tokens t.Errs
+        = (UnarSign ('+') ('+' e.P)) e.Tokens t.Errs;
+    
+    /* UnarSign -> '-' */
+    () ('-' e.M) e.Tokens t.Errs
+        = <UnarSign (('-' e.M)) e.Tokens t.Errs>;
+    
+    (('-' e.M)) e.Tokens t.Errs
+        = (UnarSign ('-') ('-' e.M)) e.Tokens t.Errs;
+}

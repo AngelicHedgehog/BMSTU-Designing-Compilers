@@ -10,6 +10,13 @@ $ENTRY CaseVariantSequence {
     
     (t.C) (';' e.D) e.Tokens t.Errs
         = <CaseVariantSequence (t.C (';' e.D)) e.Tokens t.Errs>;
+    (t.C) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseVariantSequence (t.C)
+            (';' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseVariantSequence '.'
+                Unexpected t.Type '.'
+                Expected '(' ';' ').'
+                Inserted '.'))>;
     
     (t.C t.D) (CaseVariantSequence e.CS) e.Tokens t.Errs
         = <CaseVariantSequence (t.C t.D (CaseVariantSequence e.CS)) e.Tokens t.Errs>;

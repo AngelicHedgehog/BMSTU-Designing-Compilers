@@ -46,9 +46,23 @@ $ENTRY SimpleType {
     
     ((Constant e.C1)) ('.' e.D1) e.Tokens t.Errs
         = <SimpleType ((Constant e.C1) ('.' e.D1)) e.Tokens t.Errs>;
+    ((Constant e.C1)) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <SimpleType ((Constant e.C1))
+            ('.' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start SimpleType '.'
+                Unexpected t.Type '.'
+                Expected '(' '.' ').'
+                Inserted '.'))>;
     
     ((Constant e.C1) t.D1) ('.' e.D2) e.Tokens t.Errs
         = <SimpleType ((Constant e.C1) t.D1 ('.' e.D2)) e.Tokens t.Errs>;
+    ((Constant e.C1) t.D1) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <SimpleType ((Constant e.C1) t.D1)
+            ('.' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start SimpleType '.'
+                Unexpected t.Type '.'
+                Expected '(' '.' ').'
+                Inserted '.'))>;
     
     ((Constant e.C1) t.D1 t.D2) (Constant e.C2) e.Tokens t.Errs
         = <SimpleType ((Constant e.C1) t.D1 t.D2 (Constant e.C2)) e.Tokens t.Errs>;

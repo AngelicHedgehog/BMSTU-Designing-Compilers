@@ -3,14 +3,14 @@ $EXTERN Program;
 
 /*
     <Parse t.Token*> == t.Errors t.TreeNode
-    t.Errors ::= (ERR t.Error*)
+    t.Errors ::= (t.Error*)
     t.Error ::= s.Char*
     t.TreeNode ::= (s.Nterm (s.Token*) t.TreeNode*)
 */
 $ENTRY Parse {
     e.Tokens
-        , <Program () e.Tokens '$' (ERR)> : {
-            t.ParseTree '$' t.Errors = t.ParseTree t.Errors;
+        , <Program () e.Tokens ('$' ((0 0) (0 0))) ()> : {
+            t.ParseTree ('$' e._) t.Errors = t.ParseTree t.Errors;
             t.ParseTree t.Token e._ (e.Errors)
                 = t.ParseTree (e.Errors (Token t.Token didnt recognized));
         };

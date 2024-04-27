@@ -10,6 +10,13 @@ $ENTRY ConstantList {
     
     (t.C) (',' e.CM) e.Tokens t.Errs
         = <ConstantList (t.C (',' e.CM)) e.Tokens t.Errs>;
+    (t.C) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <ConstantList (t.C)
+            (',' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start ConstantList '.'
+                Unexpected t.Type '.'
+                Expected '(' ',' ').'
+                Inserted '.'))>;
     
     (t.C t.CM) (ConstantList e.CL) e.Tokens t.Errs
         = <ConstantList (t.C t.CM (ConstantList e.CL)) e.Tokens t.Errs>;

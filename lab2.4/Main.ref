@@ -12,7 +12,7 @@ Main {
         /** /, <Lexer <LoadFile e.InputFile>> : e.Tokens
         = <Map Prout e.Tokens>/*/
         , <Lexer <LoadFile e.InputFile>> : e.Tokens
-        , <Parse e.Tokens> : t.ParseTree (ERR e.Errors)
+        , <Parse e.Tokens> : t.ParseTree (e.Errors)
         = <Print-ParseTree () t.ParseTree>
           <Prout "\nERRORS:">
           <Map {(e.Err) = <Prout 'Error: ' e.Err>;} e.Errors>;/**/

@@ -2,6 +2,12 @@ $ENTRY ConstantIdentifier {
     /* ConstantIdentifier -> IDENTIFIER */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <ConstantIdentifier ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+    () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <ConstantIdentifier ()
+            e.Tokens (e.Errs (t.Start ConstantIdentifier '.'
+                Unexpected t.Type '.'
+                Expected '(' IDENTIFIER ').'
+                Skipped '.'))>;
     
     (t.I) e.Tokens t.Errs
         = (ConstantIdentifier (IDENTIFIER) t.I) e.Tokens t.Errs;

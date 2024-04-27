@@ -11,9 +11,23 @@ $ENTRY CaseVariant {
     
     (t.C) (':' e.D) e.Tokens t.Errs
         = <CaseVariant (t.C (':' e.D)) e.Tokens t.Errs>;
+    (t.C) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseVariant (t.C)
+            (':' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseVariant '.'
+                Unexpected t.Type '.'
+                Expected '(' ':' ').'
+                Inserted '.'))>;
     
     (t.C t.D) ('(' e.B) e.Tokens t.Errs
         = <CaseVariant (t.C t.D ('(' e.B)) e.Tokens t.Errs>;
+    (t.C t.D) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseVariant (t.C t.D)
+            ('(' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseVariant '.'
+                Unexpected t.Type '.'
+                Expected '(' '\(' ').'
+                Inserted '.'))>;
     
     (t.C t.D t.B) (FieldList e.F) e.Tokens t.Errs
         = <CaseVariant (t.C t.D t.B (FieldList e.F)) e.Tokens t.Errs>;
@@ -22,6 +36,13 @@ $ENTRY CaseVariant {
 
     (t.C t.D t.B t.F) (')' e.BC) e.Tokens t.Errs
         = <CaseVariant (t.C t.D t.B t.F (')' e.BC)) e.Tokens t.Errs>;
+    (t.C t.D t.B t.F) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseVariant (t.C t.D t.B t.F)
+            (')' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseVariant '.'
+                Unexpected t.Type '.'
+                Expected '(' '\)' ').'
+                Inserted '.'))>;
     
     (t.C t.D t.B t.F t.BC) e.Tokens t.Errs
         = (CaseVariant (ConstantList ':' '(' FieldList ')') t.C t.D t.B t.F t.BC) e.Tokens t.Errs;

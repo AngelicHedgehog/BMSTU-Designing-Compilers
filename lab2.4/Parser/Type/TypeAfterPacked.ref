@@ -16,6 +16,13 @@ $ENTRY TypeAfterPacked {
     
     ((KW_ARRAY e.A) t.S) (KW_OF e.O) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_ARRAY e.A) t.S (KW_OF e.O)) e.Tokens t.Errs>;
+    ((KW_ARRAY e.A) t.S) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <TypeAfterPacked ((KW_ARRAY e.A) t.S)
+            (KW_OF (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
+            e.Tokens (e.Errs (t.Start TypeAfterPacked '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_OF ').'
+                Inserted '.'))>;
     
     ((KW_ARRAY e.A) t.S t.O) (Type e.T) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O (Type e.T)) e.Tokens t.Errs>;
@@ -31,6 +38,13 @@ $ENTRY TypeAfterPacked {
 
     ((KW_FILE e.F)) (KW_OF e.O) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_FILE e.F) (KW_OF e.O)) e.Tokens t.Errs>;
+    ((KW_FILE e.F)) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <TypeAfterPacked ((KW_FILE e.F))
+            (KW_OF (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
+            e.Tokens (e.Errs (t.Start TypeAfterPacked '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_OF ').'
+                Inserted '.'))>;
     
     ((KW_FILE e.F) t.O) (Type e.T) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_FILE e.F) t.O (Type e.T)) e.Tokens t.Errs>;
@@ -46,6 +60,13 @@ $ENTRY TypeAfterPacked {
 
     ((KW_SET e.S)) (KW_OF e.O) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_SET e.S) (KW_OF e.O)) e.Tokens t.Errs>;
+    ((KW_SET e.S)) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <TypeAfterPacked ((KW_SET e.S))
+            (KW_OF (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
+            e.Tokens (e.Errs (t.Start TypeAfterPacked '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_OF ').'
+                Inserted '.'))>;
     
     ((KW_SET e.S) t.O) (SimpleType e.T) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_SET e.S) t.O (SimpleType e.T)) e.Tokens t.Errs>;
@@ -58,6 +79,12 @@ $ENTRY TypeAfterPacked {
     /* TypeAfterPacked -> KW_RECORD FieldList KW_END */
     () (KW_RECORD e.R) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_RECORD e.R)) e.Tokens t.Errs>;
+    () t.Skip e.Tokens (e.Errs)
+        = <TypeAfterPacked ()
+            e.Tokens (e.Errs (t.Start TypeAfterPacked '.'
+                Unexpected t.Skip '.'
+                Expected '(' KW_ARRAY or KW_FILE or KW_SET or KW_RECORD ').'
+                Skipped '.'))>;
     
     ((KW_RECORD e.R)) (FieldList e.F) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_RECORD e.R) (FieldList e.F)) e.Tokens t.Errs>;
@@ -66,6 +93,13 @@ $ENTRY TypeAfterPacked {
     
     ((KW_RECORD e.R) t.F) (KW_END e.E) e.Tokens t.Errs
         = <TypeAfterPacked ((KW_RECORD e.R) t.F (KW_END e.E)) e.Tokens t.Errs>;
+    ((KW_RECORD e.R) t.F) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <TypeAfterPacked ((KW_RECORD e.R) t.F)
+            (KW_END (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
+            e.Tokens (e.Errs (t.Start '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_END ').'
+                Inserted '.'))>;
     
     ((KW_RECORD e.R) t.F t.E) e.Tokens t.Errs
         = (TypeAfterPacked (KW_RECORD FieldList KW_END) (KW_RECORD e.R) t.F t.E) e.Tokens t.Errs;

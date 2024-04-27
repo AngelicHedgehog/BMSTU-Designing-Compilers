@@ -12,4 +12,11 @@ $ENTRY UnarSign {
     
     (('-' e.M)) e.Tokens t.Errs
         = (UnarSign ('-') ('-' e.M)) e.Tokens t.Errs;
+    
+    () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <UnarSign ()
+            e.Tokens (e.Errs (t.Start UnarSign '.'
+                Unexpected t.Type '.'
+                Expected '(' '+' or '-' ').'
+                Skipped '.'))>;
 }

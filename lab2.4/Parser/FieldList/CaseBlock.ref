@@ -6,12 +6,32 @@ $ENTRY CaseBlock {
     /* CaseBlock -> KW_CASE IDENTIFIER ':' TypeIdentifier KW_OF CaseVariantSequence */
     () (KW_CASE e.C) e.Tokens t.Errs
         = <CaseBlock ((KW_CASE e.C)) e.Tokens t.Errs>;
+    () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseBlock ()
+            (KW_CASE (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseBlock '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_CASE ').'
+                Inserted '.'))>;
     
     (t.C) (IDENTIFIER e.I) e.Tokens t.Errs
         = <CaseBlock (t.C (IDENTIFIER e.I)) e.Tokens t.Errs>;
+    (t.C) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseBlock (t.C)
+            e.Tokens (e.Errs (t.Start CaseBlock '.'
+                Unexpected t.Type '.'
+                Expected '(' IDENTIFIER ').'
+                Skipped '.'))>;
 
     (t.C t.I) (':' e.D) e.Tokens t.Errs
         = <CaseBlock (t.C t.I (':' e.D)) e.Tokens t.Errs>;
+    (t.C t.I) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseBlock (t.C t.I)
+            (':' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseBlock '.'
+                Unexpected t.Type '.'
+                Expected '(' ':' ').'
+                Inserted '.'))>;
     
     (t.C t.I t.D) (TypeIdentifier e.T) e.Tokens t.Errs
         = <CaseBlock (t.C t.I t.D (TypeIdentifier e.T)) e.Tokens t.Errs>;
@@ -20,6 +40,13 @@ $ENTRY CaseBlock {
     
     (t.C t.I t.D t.T) (KW_OF e.O) e.Tokens t.Errs
         = <CaseBlock (t.C t.I t.D t.T (KW_OF e.O)) e.Tokens t.Errs>;
+    (t.C t.I t.D t.T) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CaseBlock (t.C t.I t.D t.T)
+            (KW_OF (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start CaseBlock '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_OF ').'
+                Inserted '.'))>;
     
     (t.C t.I t.D t.T t.O) (CaseVariantSequence e.CV) e.Tokens t.Errs
         = <CaseBlock (t.C t.I t.D t.T t.O (CaseVariantSequence e.CV)) e.Tokens t.Errs>;

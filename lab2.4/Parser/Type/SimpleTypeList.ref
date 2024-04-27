@@ -10,6 +10,13 @@ $ENTRY SimpleTypeList {
     
     (t.S) (',' e.C) e.Tokens t.Errs
         = <SimpleTypeList (t.S (',' e.C)) e.Tokens t.Errs>;
+    (t.S) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <SimpleTypeList (t.S)
+            (',' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start SimpleTypeList '.'
+                Unexpected t.Type '.'
+                Expected '(' ',' ').'
+                Inserted '.'))>;
     
     (t.S t.C) (SimpleTypeList e.ST) e.Tokens t.Errs
         = <SimpleTypeList (t.S t.C (SimpleTypeList e.ST)) e.Tokens t.Errs>;
@@ -19,6 +26,7 @@ $ENTRY SimpleTypeList {
     (t.S t.C t.ST) e.Tokens t.Errs
         = (SimpleTypeList (SimpleType ',' SimpleTypeList) t.S t.C t.ST) e.Tokens t.Errs;
     
+    /* SimpleTypeList -> SimpleType */
     (t.S) e.Tokens t.Errs
         = (SimpleTypeList (SimpleType) t.S) e.Tokens t.Errs;
 }

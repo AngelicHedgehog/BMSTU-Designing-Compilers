@@ -33,4 +33,11 @@ $ENTRY CommonTypeIdentifier {
     
     ((KW_TEXT e.T)) e.Tokens t.Errs
         = (CommonTypeIdentifier (KW_TEXT) (KW_TEXT e.T)) e.Tokens t.Errs;
+    
+    () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <CommonTypeIdentifier ()
+            e.Tokens (e.Errs (t.Start CommonTypeIdentifier '.'
+                Unexpected t.Type '.'
+                Expected '(' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT ').'
+                Skipped '.'))>;
 }

@@ -5,9 +5,22 @@ $ENTRY BlockConst {
     /* BlockConst -> IDENTIFIER '=' Constant ';' */
     () (IDENTIFIER e.I) e.Tokens t.Errs
         = <BlockConst ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+    () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <BlockConst ()
+            e.Tokens (e.Errs (t.Start BlockConst '.'
+                Unexpected t.Type '.'
+                Expected '(' IDENTIFIER ').'
+                Skipped '.'))>;
 
     (t.I) ('=' e.E) e.Tokens t.Errs
         = <BlockConst (t.I ('=' e.E)) e.Tokens t.Errs>;
+    (t.I) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <BlockConst (t.I)
+            ('=' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start BlockConst '.'
+                Unexpected t.Type '.'
+                Expected '(' '=' ').'
+                Inserted '.'))>;
 
     (t.I t.E) (Constant e.C) e.Tokens t.Errs
         = <BlockConst (t.I t.E (Constant e.C)) e.Tokens t.Errs>;
@@ -16,6 +29,13 @@ $ENTRY BlockConst {
     
     (t.I t.E t.C) (';' e.S) e.Tokens t.Errs
         = <BlockConst (t.I t.E t.C (';' e.S)) e.Tokens t.Errs>;
+    (t.I t.E t.C) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
+        = <BlockConst (t.I t.E t.C)
+            (';' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
+            e.Tokens (e.Errs (t.Start BlockConst '.'
+                Unexpected t.Type '.'
+                Expected '(' ';' ').'
+                Inserted '.'))>;
     
     (t.I t.E t.C t.S) e.Tokens t.Errs
         = (BlockConst (IDENTIFIER '=' Constant ';') t.I t.E t.C t.S) e.Tokens t.Errs;

@@ -1,1 +1,20 @@
-TypeIdentifier {}
+*$FROM Parser/SimpleType/CommonTypeIdentifier
+$EXTERN CommonTypeIdentifier;
+
+TypeIdentifier {
+    /* TypeIdentifier -> IDENTIFIER */
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <TypeIdentifier ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+    
+    ((IDENTIFIER e.I)) e.Tokens t.Errs
+        = (TypeIdentifier (IDENTIFIER) (IDENTIFIER e.I)) e.Tokens t.Errs;
+    
+    /* TypeIdentifier -> CommonTypeIdentifier */
+    () (CommonTypeIdentifier e.C) e.Tokens t.Errs
+        = <TypeIdentifier ((CommonTypeIdentifier e.C)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <TypeIdentifier () <CommonTypeIdentifier () e.Tokens t.Errs>>;
+    
+    ((CommonTypeIdentifier e.C)) e.Tokens t.Errs
+        = (TypeIdentifier (CommonTypeIdentifier) (CommonTypeIdentifier e.C)) e.Tokens t.Errs;
+}

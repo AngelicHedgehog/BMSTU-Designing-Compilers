@@ -1,1 +1,20 @@
-IdentifierList {}
+IdentifierList {
+    /* IdentifierList -> IDENTIFIER ',' IdentifierList */
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <IdentifierList ((IDENTIFIER e.I)) e.Tokens t.Errs>;
+    
+    ((IDENTIFIER e.I)) (',' e.C) e.Tokens t.Errs
+        = <IdentifierList ((IDENTIFIER e.I) (',' e.C)) e.Tokens t.Errs>;
+
+    ((IDENTIFIER e.I) t.C) (IdentifierList e.IL) e.Tokens t.Errs
+        = <IdentifierList ((IDENTIFIER e.I) t.C (IdentifierList e.IL)) e.Tokens t.Errs>;
+    ((IDENTIFIER e.I) t.C) e.Tokens t.Errs
+        = <IdentifierList ((IDENTIFIER e.I) t.C) <IdentifierList () e.Tokens t.Errs>>;
+    
+    ((IDENTIFIER e.I) t.C t.IL) e.Tokens t.Errs
+        = (IdentifierList (IDENTIFIER ',' IdentifierList) (IDENTIFIER e.I) t.C t.IL) e.Tokens t.Errs;
+    
+    /* IdentifierList -> IDENTIFIER */
+    ((IDENTIFIER e.I)) e.Tokens t.Errs
+        = (IdentifierList (IDENTIFIER) (IDENTIFIER e.I)) e.Tokens t.Errs;
+}

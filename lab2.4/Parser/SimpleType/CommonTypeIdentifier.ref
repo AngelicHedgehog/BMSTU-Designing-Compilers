@@ -1,1 +1,36 @@
-CommonTypeIdentifier {}
+CommonTypeIdentifier {
+    /* CommonTypeIdentifier -> KW_INTEGER */
+    () (KW_INTEGER e.I) e.Tokens t.Errs
+        = <CommonTypeIdentifier ((KW_INTEGER e.I)) e.Tokens t.Errs>;
+    
+    ((KW_INTEGER e.I)) e.Tokens t.Errs
+        = (CommonTypeIdentifier (KW_INTEGER) (KW_INTEGER e.I)) e.Tokens t.Errs;
+
+    /* CommonTypeIdentifier -> KW_BOOLEAN */
+    () (KW_BOOLEAN e.B) e.Tokens t.Errs
+        = <CommonTypeIdentifier ((KW_BOOLEAN e.B)) e.Tokens t.Errs>;
+    
+    ((KW_BOOLEAN e.B)) e.Tokens t.Errs
+        = (CommonTypeIdentifier (KW_BOOLEAN) (KW_BOOLEAN e.B)) e.Tokens t.Errs;
+
+    /* CommonTypeIdentifier -> KW_REAL */
+    () (KW_REAL e.R) e.Tokens t.Errs
+        = <CommonTypeIdentifier ((KW_REAL e.R)) e.Tokens t.Errs>;
+    
+    ((KW_REAL e.R)) e.Tokens t.Errs
+        = (CommonTypeIdentifier (KW_REAL) (KW_REAL e.R)) e.Tokens t.Errs;
+
+    /* CommonTypeIdentifier -> KW_CHAR */
+    () (KW_CHAR e.C) e.Tokens t.Errs
+        = <CommonTypeIdentifier ((KW_CHAR e.C)) e.Tokens t.Errs>;
+    
+    ((KW_CHAR e.C)) e.Tokens t.Errs
+        = (CommonTypeIdentifier (KW_CHAR) (KW_CHAR e.C)) e.Tokens t.Errs;
+
+    /* CommonTypeIdentifier -> KW_TEXT */
+    () (KW_TEXT e.T) e.Tokens t.Errs
+        = <CommonTypeIdentifier ((KW_TEXT e.T)) e.Tokens t.Errs>;
+    
+    ((KW_TEXT e.T)) e.Tokens t.Errs
+        = (CommonTypeIdentifier (KW_TEXT) (KW_TEXT e.T)) e.Tokens t.Errs;
+}

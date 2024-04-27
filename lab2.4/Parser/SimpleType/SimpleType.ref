@@ -1,1 +1,60 @@
-SimpleType {}
+*$FROM Parser/SimpleType/TypeIdentifier
+*$FROM Parser/SimpleType/IdentifierList
+*$FROM Parser/Constant/Constant
+$EXTERN TypeIdentifier, IdentifierList, Constant;
+
+SimpleType {
+    /* SimpleType -> TypeIdentifier */
+    () (TypeIdentifier e.T) e.Tokens t.Errs
+        = <SimpleType ((TypeIdentifier e.T)) e.Tokens t.Errs>;
+    () (KW_INTEGER e.I) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (KW_INTEGER e.I) e.Tokens t.Errs>>;
+    () (KW_BOOLEAN e.B) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (KW_BOOLEAN e.B) e.Tokens t.Errs>>;
+    () (KW_REAL e.R) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (KW_REAL e.R) e.Tokens t.Errs>>;
+    () (KW_CHAR e.C) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (KW_CHAR e.C) e.Tokens t.Errs>>;
+    () (KW_TEXT e.T) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (KW_TEXT e.T) e.Tokens t.Errs>>;
+    () (IDENTIFIER e.I) e.Tokens t.Errs
+        = <SimpleType () <TypeIdentifier () (IDENTIFIER e.I) e.Tokens t.Errs>>;
+    
+    ((TypeIdentifier e.T)) e.Tokens t.Errs
+        = (SimpleType (TypeIdentifier) (TypeIdentifier e.T)) e.Tokens t.Errs;
+    
+    /* SimpleType -> '(' IdentifierList ')' */
+    () ('(' e.B) e.Tokens t.Errs
+        = <SimpleType (('(' e.B)) e.Tokens t.Errs>;
+    
+    (('(' e.B)) (IdentifierList e.I) e.Tokens t.Errs
+        = <SimpleType (('(' e.B) (IdentifierList e.I)) e.Tokens t.Errs>;
+    (('(' e.B)) e.Tokens t.Errs
+        = <SimpleType (('(' e.B)) <IdentifierList () e.Tokens t.Errs>>;
+    
+    (('(' e.B) t.I) (')' e.BC) e.Tokens t.Errs
+        = <SimpleType (('(' e.B) t.I (')' e.BC)) e.Tokens t.Errs>;
+    
+    (('(' e.B) t.I t.BC) e.Tokens t.Errs
+        = (SimpleType ('(' IdentifierList ')') ('(' e.B) t.I t.BC) e.Tokens t.Errs;
+    
+    /* SimpleType -> Constant '.' '.' Constant */
+    () (Constant e.C1) e.Tokens t.Errs
+        = <SimpleType ((Constant e.C1)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <SimpleType () <Constant () e.Tokens t.Errs>>;
+    
+    ((Constant e.C1)) ('.' e.D1) e.Tokens t.Errs
+        = <SimpleType ((Constant e.C1) ('.' e.D1)) e.Tokens t.Errs>;
+    
+    ((Constant e.C1) t.D1) ('.' e.D2) e.Tokens t.Errs
+        = <SimpleType ((Constant e.C1) t.D1 ('.' e.D2)) e.Tokens t.Errs>;
+    
+    ((Constant e.C1) t.D1 t.D2) (Constant e.C2) e.Tokens t.Errs
+        = <SimpleType ((Constant e.C1) t.D1 t.D2 (Constant e.C2)) e.Tokens t.Errs>;
+    ((Constant e.C1) t.D1 t.D2) e.Tokens t.Errs
+        = <SimpleType ((Constant e.C1) t.D1 t.D2) <Constant () e.Tokens t.Errs>>;
+    
+    ((Constant e.C1) t.D1 t.D2 t.C2) e.Tokens t.Errs
+        = (SimpleType (Constant '.' '.' Constant) t.D1 t.D2 t.C2) e.Tokens t.Errs;
+}

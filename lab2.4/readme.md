@@ -117,7 +117,7 @@ ConstantList -> Constant
 
 # type
 Type -> SimpleType
-      | '^' Typeidentifier
+      | '^' TypeIdentifier
       | KW_PACKED TypeAfterPacked
       | TypeAfterPacked
 

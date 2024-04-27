@@ -1,1 +1,72 @@
-TypeAfterPacked {}
+*$FROM Parser/Type/SimpleTypeList
+*$FROM Parser/Type/Type
+*$FROM Parser/SimpleType/SimpleType
+*$FROM Parser/FieldList/FieldList
+$EXTERN SimpleTypeList, Type, SimpleType, FieldList;
+
+TypeAfterPacked {
+    /* TypeAfterPacked -> KW_ARRAY SimpleTypeList KW_OF Type */
+    () (KW_ARRAY e.A) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A)) e.Tokens t.Errs>;
+    
+    ((KW_ARRAY e.A)) (SimpleTypeList e.S) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A) (SimpleTypeList e.S)) e.Tokens t.Errs>;
+    ((KW_ARRAY e.A)) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A)) <SimpleTypeList () e.Tokens t.Errs>>;
+    
+    ((KW_ARRAY e.A) t.S) (KW_OF e.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A) t.S (KW_OF e.O)) e.Tokens t.Errs>;
+    
+    ((KW_ARRAY e.A) t.S t.O) (Type e.T) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O (Type e.T)) e.Tokens t.Errs>;
+    ((KW_ARRAY e.A) t.S t.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_ARRAY e.A) t.S t.O) <Type () e.Tokens t.Errs>>;
+    
+    ((KW_ARRAY e.A) t.S t.O t.T) e.Tokens t.Errs
+        = (TypeAfterPacked (KW_ARRAY SimpleTypeList KW_OF Type) (KW_ARRAY e.A) t.S t.O t.T) e.Tokens t.Errs;
+
+    /* TypeAfterPacked -> KW_FILE KW_OF Type */
+    () (KW_FILE e.F) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_FILE e.F) e.Tokens t.Errs)>;
+
+    ((KW_FILE e.F)) (KW_OF e.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_FILE e.F) (KW_OF e.O)) e.Tokens t.Errs>;
+    
+    ((KW_FILE e.F) t.O) (Type e.T) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_FILE e.F) t.O (Type e.T)) e.Tokens t.Errs>;
+    ((KW_FILE e.F) t.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_FILE e.F) t.O) <Type () e.Tokens t.Errs>>;
+    
+    ((KW_FILE e.F) t.O t.T) e.Tokens t.Errs
+        = (TypeAfterPacked (KW_FILE KW_OF Type) (KW_FILE e.F) t.O t.T) e.Tokens t.Errs;
+    
+    /* TypeAfterPacked -> KW_SET KW_OF SimpleType */
+    () (KW_SET e.S) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_SET e.S) e.Tokens t.Errs)>;
+
+    ((KW_SET e.S)) (KW_OF e.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_SET e.S) (KW_OF e.O)) e.Tokens t.Errs>;
+    
+    ((KW_SET e.S) t.O) (SimpleType e.T) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_SET e.S) t.O (SimpleType e.T)) e.Tokens t.Errs>;
+    ((KW_SET e.S) t.O) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_SET e.S) t.O) <SimpleType () e.Tokens t.Errs>>;
+    
+    ((KW_SET e.S) t.O t.T) e.Tokens t.Errs
+        = (TypeAfterPacked (KW_SET KW_OF SimpleType) (KW_SET e.S) t.O t.T) e.Tokens t.Errs;
+
+    /* TypeAfterPacked -> KW_RECORD FieldList KW_END */
+    () (KW_RECORD e.R) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_RECORD e.R)) e.Tokens t.Errs>;
+    
+    ((KW_RECORD e.R)) (FieldList e.F) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_RECORD e.R) (FieldList e.F)) e.Tokens t.Errs>;
+    ((KW_RECORD e.R)) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_RECORD e.R)) <FieldList () e.Tokens t.Errs>>;
+    
+    ((KW_RECORD e.R) t.F) (KW_END e.E) e.Tokens t.Errs
+        = <TypeAfterPacked ((KW_RECORD e.R) t.F) (KW_END e.E) e.Tokens t.Errs>;
+    
+    ((KW_RECORD e.R) t.F t.E) e.Tokens t.Errs
+        = <TypeAfterPacked (KW_RECORD FieldList KW_END) (KW_RECORD e.R) t.F t.E> e.Tokens t.Errs;
+}

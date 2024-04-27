@@ -1,1 +1,24 @@
-SimpleTypeList {}
+*$FROM Parser/SimpleType/SimpleType
+$EXTERN SimpleType;
+
+SimpleTypeList {
+    /* SimpleTypeList -> SimpleType ',' SimpleTypeList */
+    () (SimpleType e.S) e.Tokens t.Errs
+        = <SimpleTypeList ((SimpleType e.S)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <SimpleTypeList () <SimpleType () e.Tokens t.Errs>>;
+    
+    (t.S) (',' e.C) e.Tokens t.Errs
+        = <SimpleTypeList (t.S (',' e.C)) e.Tokens t.Errs>;
+    
+    (t.S t.C) (SimpleTypeList e.ST) e.Tokens t.Errs
+        = <SimpleTypeList (t.S t.C (SimpleTypeList e.ST)) e.Tokens t.Errs>;
+    (t.S t.C) e.Tokens t.Errs
+        = <SimpleTypeList (t.S t.C) <SimpleTypeList () e.Tokens t.Errs>>;
+    
+    (t.S t.C t.ST) e.Tokens t.Errs
+        = (SimpleTypeList (SimpleType ',' SimpleTypeList) t.S t.C t.ST) e.Tokens t.Errs;
+    
+    (t.S) e.Tokens t.Errs
+        = (SimpleTypeList (SimpleType) t.S) e.Tokens t.Errs;
+}

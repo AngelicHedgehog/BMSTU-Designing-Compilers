@@ -1,1 +1,23 @@
-FieldList {}
+*$FROM Parser/FieldList/IdentifierWithTypeList
+$EXTERN IdentifierWithTypeList;
+
+FieldList {
+    /* FieldList -> IdentifierWithTypeList ';' */
+    () (IdentifierWithTypeList e.I) e.Tokens t.Errs
+        = <FieldList ((IdentifierWithTypeList e.I)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <FieldList () <IdentifierWithTypeList () e.Tokens t.Errs>>;
+    
+    (t.I) (';' e.C) e.Tokens t.Errs
+        = <FieldList (t.I (';' e.C)) e.Tokens t.Errs>;
+    
+    (t.I (';' e.C)) e.Tokens t.Errs
+        = (FieldList (IdentifierWithTypeList ';') t.I (';' e.C)) e.Tokens t.Errs;
+    
+    /* FieldList -> IdentifierWithTypeList CaseBlock */
+    (t.I) (CaseBlock e.C) e.Tokens t.Errs
+        = <FieldList (t.I (CaseBlock e.C)) e.Tokens t.Errs>;
+    
+    (t.I (CaseBlock e.C)) e.Tokens t.Errs
+        = (FieldList (IdentifierWithTypeList CaseBlock) t.I (CaseBlock e.C))  e.Tokens t.Errs;
+}

@@ -1,0 +1,21 @@
+*$FROM Parser/SimpleType/IdentifierList
+$EXTERN IdentifierList;
+
+IdentifierWithType {
+    /* IdentifierWithType -> IdentifierList ':' Type */
+    () (IdentifierList e.I) e.Tokens t.Errs
+        = <IdentifierWithType ((IdentifierList e.I)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <IdentifierWithType () <IdentifierList () e.Tokens t.Errs>>;
+    
+    (t.I) (':' e.D) e.Tokens t.Errs
+        = <IdentifierWithType (t.I (':' e.D)) e.Tokens t.Errs>;
+    
+    (t.I t.D) (Type e.T) e.Tokens t.Errs
+        = <IdentifierWithType (t.I t.D (Type e.T)) e.Tokens t.Errs>;
+    (t.I t.D) e.Tokens t.Errs
+        = <IdentifierWithType (t.I t.D) <Type () e.Tokens t.Errs>>;
+    
+    (t.I t.D t.T) e.Tokens t.Errs
+        = (IdentifierWithType (IdentifierList ':' Type) t.I t.D t.T) e.Tokens t.Errs;
+}

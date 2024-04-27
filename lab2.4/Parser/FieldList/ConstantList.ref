@@ -1,1 +1,25 @@
-ConstantList {}
+*$FROM Parse/Constant/Constant
+$EXTERN Constant;
+
+ConstantList {
+    /* ConstantList -> Constant ',' ConstantList */
+    () (Constant e.C) e.Tokens t.Errs
+        = <ConstantList ((Constant e.C)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <ConstantList () <Constant () e.Tokens t.Errs>>;
+    
+    (t.C) (',' e.CM) e.Tokens t.Errs
+        = <ConstantList (t.C (',' e.CM)) e.Tokens t.Errs>;
+    
+    (t.C t.CM) (ConstantList e.CL) e.Tokens t.Errs
+        = <ConstantList (t.C t.CM (ConstantList e.CL)) e.Tokens t.Errs>;
+    (t.C t.CM) e.Tokens t.Errs
+        = <ConstantList (t.C t.CM) <ConstantList () e.Tokens t.Errs>>;
+    
+    (t.C t.CM t.CL) e.Tokens t.Errs
+        = (ConstantList (Constant ',' ConstantList) t.C t.CM t.CL) e.Tokens t.Errs;
+    
+    /* ConstantList -> Constant */
+    (t.C) e.Tokens t.Errs
+        = (ConstantList (Constant) t.C) e.Tokens t.Errs;
+}

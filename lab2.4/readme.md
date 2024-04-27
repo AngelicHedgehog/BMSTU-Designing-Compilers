@@ -101,12 +101,10 @@ BlockTypeSequence -> BlockType
 BlockType -> IDENTIFIER '=' Type ';'
 
 # field list
-FieldList -> IdentifierWithTypeList
-           | IdentifierWithTypeSeq CaseBlock
+FieldList -> IdentifierWithTypeList ';'
+           | IdentifierWithTypeList CaseBlock
 IdentifierWithTypeList -> IdentifierWithType
                         | IdentifierWithType ';' IdentifierWithTypeList
-IdentifierWithTypeSeq -> IdentifierWithType ';'
-                       | IdentifierWithType ';' IdentifierWithTypeSeq
 IdentifierWithType -> IdentifierList ':' Type
 CaseBlock -> KW_CASE IDENTIFIER ':' TypeIdentifier KW_OF CaseVariantSequence
 CaseVariantSequence -> CaseVariant

@@ -1,1 +1,28 @@
-CaseVariant {}
+*$FROM Parser/FieldList/ConstantList
+*$FROM Parser/FieldList/FieldList
+$EXTERN ConstantList, FieldList;
+
+CaseVariant {
+    /* CaseVariant -> ConstantList ':' '(' FieldList ')' */
+    () (ConstantList e.C) e.Tokens t.Errs
+        = <CaseVariant ((ConstantList e.C)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <CaseVariant () <ConstantList () e.Tokens t.Errs>>;
+    
+    (t.C) (':' e.D) e.Tokens t.Errs
+        = <CaseVariant (t.C (':' e.D)) e.Tokens t.Errs>;
+    
+    (t.C t.D) ('(' e.B) e.Tokens t.Errs
+        = <CaseVariant (t.C t.D ('(' e.B)) e.Tokens t.Errs>;
+    
+    (t.C t.D t.B) (FieldList e.F) e.Tokens t.Errs
+        = <CaseVariant (t.C t.D t.B (FieldList e.F)) e.Tokens t.Errs>;
+    (t.C t.D t.B) e.Tokens t.Errs
+        = <CaseVariant (t.C t.D t.B) <FieldList () e.Tokens t.Errs>>;
+
+    (t.C t.D t.B t.F) (')' e.BC) e.Tokens t.Errs
+        = <CaseVariant (t.C t.D t.B t.F (')' e.BC)) e.Tokens t.Errs>;
+    
+    (t.C t.D t.B t.F t.BC) e.Tokens t.Errs
+        = (CaseVariant (ConstantList ':' '(' FieldList ')') t.C t.D t.B t.F t.BC) e.Tokens t.Errs;
+}

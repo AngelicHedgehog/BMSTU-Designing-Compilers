@@ -1,1 +1,29 @@
-CaseBlock {}
+*$FROM Parser/SimpleType/TypeIdentifier
+*$FROM Parser/FieldList/CaseVariantSequence
+$EXTERN TypeIdentifier, CaseVariantSequence;
+
+CaseBlock {
+    /* CaseBlock -> KW_CASE IDENTIFIER ':' TypeIdentifier KW_OF CaseVariantSequence */
+    () (KW_CASE e.C) e.Tokens t.Errs
+        = <CaseBlock ((KW_CASE e.C)) e.Tokens t.Errs>;
+    
+    (t.C) (IDENTIFIER e.I) e.Tokens t.Errs
+        = <CaseBlock (t.C (IDENTIFIER e.I)) e.Tokens t.Errs>;
+    
+    (t.C t.I) (TypeIdentifier e.T) e.Tokens t.Errs
+        = <CaseBlock (t.C t.I (TypeIdentifier e.T) e.Tokens t.Errs)>;
+    (t.C t.I) e.Tokens t.Errs
+        = <CaseBlock (t.C t.I) <TypeIdentifier () e.Tokens t.Errs>>;
+    
+    (t.C t.I t.T) (KW_OF e.O) e.Tokens t.Errs
+        = <CaseBlock (t.C t.I t.T (KW_OF e.O)) e.Tokens t.Errs>;
+    
+    (t.C t.I t.T t.O) (CaseVariantSequence e.CV) e.Tokens t.Errs
+        = <CaseBlock (t.C t.I t.T (CaseVariantSequence e.CV)) e.Tokens t.Errs>;
+    (t.C t.I t.T t.O) e.Tokens t.Errs
+        = <CaseBlock (t.C t.I t.T) <CaseVariantSequence () e.Tokens t.Errs>>;
+    
+    (t.C t.I t.T t.O t.CV) e.Tokens t.Errs
+        = (CaseBlock (KW_CASE IDENTIFIER ':' TypeIdentifier KW_OF CaseVariantSequence)
+            t.C t.I t.T t.O t.CV) e.Tokens t.Errs;
+}

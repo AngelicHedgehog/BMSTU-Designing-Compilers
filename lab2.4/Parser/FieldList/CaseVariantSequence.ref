@@ -1,1 +1,25 @@
-CaseVariantSequence {}
+*$FROM Parse/FieldList/CaseVariant
+$EXTERN CaseVariant;
+
+CaseVariantSequence {
+    /* CaseVariantSequence -> CaseVariant ';' CaseVariantSequence */
+    () (CaseVariant e.C) e.Tokens t.Errs
+        = <CaseVariantSequence ((CaseVariant e.C)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <CaseVariantSequence () <CaseVariant () e.Tokens t.Errs>>;
+    
+    (t.C) (';' e.D) e.Tokens t.Errs
+        = <CaseVariantSequence (t.C (';' e.D)) e.Tokens t.Errs>;
+    
+    (t.C t.D) (CaseVariantSequence e.CS) e.Tokens t.Errs
+        = <CaseVariantSequence (t.C t.D (CaseVariantSequence e.CS)) e.Tokens t.Errs>;
+    (t.C t.D) e.Tokens t.Errs
+        = <CaseVariantSequence (t.C t.D) <CaseVariantSequence () e.Tokens t.Errs>>;
+    
+    (t.C t.D t.CS) e.Tokens t.Errs
+        = (CaseVariantSequence (CaseVariant ';' CaseVariantSequence) t.C t.D t.CS) e.Tokens t.Errs;
+    
+    /* CaseVariantSequence -> CaseVariant */
+    (t.C) e.Tokens t.Errs
+        = (CaseVariantSequence (CaseVariant) t.C) e.Tokens t.Errs;
+}

@@ -165,9 +165,9 @@ Lexer-Pos {
                         'CASE' = KW_CASE;
                         'CONST' = KW_CONST;
                         'TYPE' = KW_TYPE;
-                        e._ = IDENTIFIER e.Lexem_;
+                        e._ = IDENTIFIER (e.Lexem_);
                     } : t.LexemType_ e.Lexem__
-                    = t.LexemType_ ((e.Lexem__)) (s.Col_) e.Syms_;
+                    = t.LexemType_ (e.Lexem__) (s.Col_) e.Syms_;
                 FALSE = s.Sym () (<Inc s.Col>) e.Syms;
             };
         } : s.LexemType (e.Lexem) (s.Col__) e.Syms__

@@ -15,9 +15,6 @@ $ENTRY Parse {
 
 /*
     <Rules (e.Scanned) t.Token* t.Errors> == t.TreeNode t.Token* t.Errors
-    t.Errors ::= (ERR t.Error*)
-    t.Error ::= s.Char*
-    t.TreeNode ::= (s.Nterm (s.Token*) t.TreeNode*)
 */
 Rules {
     /* Rules ::= Rule Rules */

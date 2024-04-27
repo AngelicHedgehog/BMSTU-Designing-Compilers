@@ -1,0 +1,10 @@
+Program {
+    /* Program -> Block */
+    () (Block e.B) e.Tokens t.Errs
+        = <Program ((Block e.B)) e.Tokens t.Errs>;
+    () e.Tokens t.Errs
+        = <Rules () <Block () e.Tokens t.Errs>>;
+
+    (t.Block) e.Tokens t.Errs
+        = (Program (Block) t.Block) e.Tokens t.Errs;
+}

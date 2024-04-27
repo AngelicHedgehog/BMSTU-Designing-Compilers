@@ -1,6 +1,6 @@
 *$FROM LibraryEx
 *$FROM Lexer
-*$FROM Parser
+*$FROM Parser/Parser
 $EXTERN ArgList, LoadFile, Map, Lexer, Parse;
 
 $ENTRY Go {

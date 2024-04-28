@@ -10,13 +10,6 @@ $ENTRY IdentifierWithTypeList {
     
     (t.I) (';' e.C) e.Tokens t.Errs
         = <IdentifierWithTypeList (t.I (';' e.C)) e.Tokens t.Errs>;
-    (t.I) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <IdentifierWithTypeList (t.I)
-            (';' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
-            e.Tokens (e.Errs (t.Start IdentifierWithTypeList '.'
-                Unexpected t.Type '.'
-                Expected '(' ';' ').'
-                Inserted '.'))>;
     
     (t.I t.C) (IdentifierWithTypeList e.IL) e.Tokens t.Errs
         = <IdentifierWithTypeList (t.I t.C (IdentifierWithTypeList e.IL)) e.Tokens t.Errs>;

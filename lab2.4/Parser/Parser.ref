@@ -9,9 +9,11 @@ $EXTERN Program;
 */
 $ENTRY Parse {
     e.Tokens
-        , <Program () e.Tokens ('$' ((0 0) (0 0))) ()> : {
-            t.ParseTree ('$' e._) t.Errors = t.ParseTree t.Errors;
-            t.ParseTree t.Token e._ (e.Errors)
-                = t.ParseTree (e.Errors (Token t.Token didnt recognized));
+        , <Program () e.Tokens '$' ()> : {
+            t.ParseTree '$' t.Errors = t.ParseTree t.Errors;
+            t.ParseTree (t.Type (t.Start t.End) e.Attr) e._ (e.Errs)
+                = t.ParseTree (e.Errs (t.Start Parser '.'
+                    Token t.Type and all next didnt recognized '.'
+                    Expected End Of File '.'));
         };
 }

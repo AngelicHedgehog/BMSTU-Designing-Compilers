@@ -37,6 +37,11 @@ $ENTRY Constant {
                 Unexpected t.Type '.'
                 Expected '(' ConstantIdentifier or UNSIGNED_NUMBER ').'
                 Skipped '.'))>;
+    ((UnarSign e.U)) '$' (e.Errs)
+        = (Constant (EOF)) '$'
+            (e.Errs (Constant '.'
+                Unexpected End Of File '.'
+                Expected '(' ConstantIdentifier or UNSIGNED_NUMBER ').'));
 
     ((UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
         = (Constant (UnarSign UNSIGNED_NUMBER) (UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
@@ -60,6 +65,11 @@ $ENTRY Constant {
                 Unexpected t.Type '.'
                 Expected '(' CHAR_SEQUENCE ').'
                 Skipped '.'))>;
+    (('\'' e.C1)) '$' (e.Errs)
+        = (Constant (EOF)) '$'
+            (e.Errs (Constant '.'
+                Unexpected End Of File '.'
+                Expected '(' CHAR_SEQUENCE ').'));
     
     (('\'' e.C1) t.CS) ('\'' e.C2) e.Tokens t.Errs
         = <Constant (('\'' e.C1) t.CS ('\'' e.C2)) e.Tokens t.Errs>;
@@ -70,15 +80,25 @@ $ENTRY Constant {
                 Unexpected t.Type '.'
                 Expected '(' '\'' ').'
                 Inserted '.'))>;
+    (('\'' e.C1) t.CS) '$' (e.Errs)
+        = (Constant (EOF))
+            (e.Errs (Constant '.'
+                Unexpected End Of File '.'
+                Expected '(' '\'' ').'));
     
     (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs
         = (Constant ('\'' CHAR_SEQUENCE '\'') (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs) e.Tokens t.Errs;
     
         
     () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <Constant (t.C t.I)
+        = <Constant ()
             e.Tokens (e.Errs (t.Start Constant '.'
                 Unexpected t.Type '.'
                 Expected '(' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' ').'
                 Skipped '.'))>;
+    () '$' (e.Errs)
+        = (Constant (EOF)) '$'
+            (e.Errs (Constant '.'
+                Unexpected End Of File '.'
+                Expected '(' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' ').'));
 }

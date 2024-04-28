@@ -40,4 +40,10 @@ $ENTRY CommonTypeIdentifier {
                 Unexpected t.Type '.'
                 Expected '(' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT ').'
                 Skipped '.'))>;
+    () '$' (e.Errs)
+        = (CommonTypeIdentifier (EOF)) '$'
+            (e.Errs (CommonTypeIdentifier '.'
+                Unexpected End Of File '.'
+                Expected '(' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT ').'
+                Skipped '.'));
 }

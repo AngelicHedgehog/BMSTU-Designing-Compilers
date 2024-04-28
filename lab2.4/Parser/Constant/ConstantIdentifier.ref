@@ -8,6 +8,11 @@ $ENTRY ConstantIdentifier {
                 Unexpected t.Type '.'
                 Expected '(' IDENTIFIER ').'
                 Skipped '.'))>;
+    () '$' (e.Errs)
+        = (ConstantIdentifier (EOF)) '$'
+            (e.Errs (ConstantIdentifier '.'
+                Unexpected End Of File '.'
+                Expected '(' IDENTIFIER ').'));
     
     (t.I) e.Tokens t.Errs
         = (ConstantIdentifier (IDENTIFIER) t.I) e.Tokens t.Errs;

@@ -11,6 +11,11 @@ $ENTRY BlockConst {
                 Unexpected t.Type '.'
                 Expected '(' IDENTIFIER ').'
                 Skipped '.'))>;
+    () '$' (e.Errs)
+        = (BlockConst ()) '$'
+            (e.Errs (BlockConst '.'
+                Unexpected End Of File '.'
+                Expected '(' IDENTIFIER ').'));
 
     (t.I) ('=' e.E) e.Tokens t.Errs
         = <BlockConst (t.I ('=' e.E)) e.Tokens t.Errs>;
@@ -21,6 +26,11 @@ $ENTRY BlockConst {
                 Unexpected t.Type '.'
                 Expected '(' '=' ').'
                 Inserted '.'))>;
+    (t.I) '$' (e.Errs)
+        = (BlockConst (EOF)) '$'
+            (e.Errs (BlockConst '.'
+                Unexpected End Of File '.'
+                Expected '(' '=' ').'));
 
     (t.I t.E) (Constant e.C) e.Tokens t.Errs
         = <BlockConst (t.I t.E (Constant e.C)) e.Tokens t.Errs>;
@@ -36,6 +46,11 @@ $ENTRY BlockConst {
                 Unexpected t.Type '.'
                 Expected '(' ';' ').'
                 Inserted '.'))>;
+    (t.I t.E t.C) '$' (e.Errs)
+        = (BlockConst (EOF)) '$'
+            (e.Errs (BlockConst '.'
+                Unexpected End Of File '.'
+                Expected '(' ';' ').'));
     
     (t.I t.E t.C t.S) e.Tokens t.Errs
         = (BlockConst (IDENTIFIER '=' Constant ';') t.I t.E t.C t.S) e.Tokens t.Errs;

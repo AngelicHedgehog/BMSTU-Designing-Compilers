@@ -19,4 +19,9 @@ $ENTRY UnarSign {
                 Unexpected t.Type '.'
                 Expected '(' '+' or '-' ').'
                 Skipped '.'))>;
+    () '$' (e.Errs)
+        = (UnarSign (EOF)) '$'
+            (e.Errs (UnarSign '.'
+                Unexpected End Of File '.'
+                Expected '(' '+' or '-' ').'));
 }

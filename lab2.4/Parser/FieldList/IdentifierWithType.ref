@@ -18,6 +18,11 @@ $ENTRY IdentifierWithType {
                 Unexpected t.Type '.'
                 Expected '(' ':' ').'
                 Inserted '.'))>;
+    (t.I) '$' (e.Errs)
+        = (IdentifierWithType (EOF)) '$'
+            (e.Errs (IdentifierWithType '.'
+                Unexpected End Of File '.'
+                Expected '(' ':' ').'));
     
     (t.I t.D) (Type e.T) e.Tokens t.Errs
         = <IdentifierWithType (t.I t.D (Type e.T)) e.Tokens t.Errs>;

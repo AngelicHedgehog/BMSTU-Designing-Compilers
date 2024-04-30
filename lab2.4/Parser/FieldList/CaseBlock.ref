@@ -11,13 +11,15 @@ $ENTRY CaseBlock {
             (KW_CASE (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseBlock '.'
                 Unexpected t.Type '.'
-                Expected '(' KW_CASE ').'
+                Expected '[' KW_CASE '].'
                 Inserted '.'))>;
     () '$' (e.Errs)
-        = (CaseBlock (EOF)) '$'
-            (e.Errs (CaseBlock '.'
+        = <CaseBlock ()
+            (KW_CASE ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseBlock '.'
                 Unexpected End Of File '.'
-                Expected '(' KW_CASE ').'));
+                Expected '[' KW_CASE '].'
+                Inserted '.'))>;
     
     (t.C) (IDENTIFIER e.I) e.Tokens t.Errs
         = <CaseBlock (t.C (IDENTIFIER e.I)) e.Tokens t.Errs>;
@@ -25,13 +27,15 @@ $ENTRY CaseBlock {
         = <CaseBlock (t.C)
             e.Tokens (e.Errs (t.Start CaseBlock '.'
                 Unexpected t.Type '.'
-                Expected '(' IDENTIFIER ').'
+                Expected '[' IDENTIFIER '].'
                 Skipped '.'))>;
     (t.C) '$' (e.Errs)
-        = (CaseBlock (EOF)) '$'
-            (e.Errs (CaseBlock '.'
+        = (CaseBlock (EOF))
+            '$'
+            (e.Errs ((EOF) CaseBlock '.'
                 Unexpected End Of File '.'
-                Expected '(' IDENTIFIER ').'));
+                Expected '[' IDENTIFIER '].'
+                Terminated '.'));
 
     (t.C t.I) (':' e.D) e.Tokens t.Errs
         = <CaseBlock (t.C t.I (':' e.D)) e.Tokens t.Errs>;
@@ -40,13 +44,15 @@ $ENTRY CaseBlock {
             (':' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseBlock '.'
                 Unexpected t.Type '.'
-                Expected '(' ':' ').'
+                Expected '[' ':' '].'
                 Inserted '.'))>;
     (t.C t.I) '$' (e.Errs)
-        = (CaseBlock (EOF)) '$'
-            (e.Errs (CaseBlock '.'
+        = <CaseBlock (t.C t.I)
+            (':' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseBlock '.'
                 Unexpected End Of File '.'
-                Expected '(' ':' ').'));
+                Expected '[' ':' '].'
+                Inserted '.'))>;
     
     (t.C t.I t.D) (TypeIdentifier e.T) e.Tokens t.Errs
         = <CaseBlock (t.C t.I t.D (TypeIdentifier e.T)) e.Tokens t.Errs>;
@@ -60,13 +66,15 @@ $ENTRY CaseBlock {
             (KW_OF (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseBlock '.'
                 Unexpected t.Type '.'
-                Expected '(' KW_OF ').'
+                Expected '[' KW_OF '].'
                 Inserted '.'))>;
     (t.C t.I t.D t.T) '$' (e.Errs)
-        = (CaseBlock (EOF)) '$'
-            (e.Errs (CaseBlock '.'
+        = <CaseBlock (t.C t.I t.D t.T)
+            (KW_OF ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseBlock '.'
                 Unexpected End Of FIle '.'
-                Expected '(' KW_OF ').'));
+                Expected '[' KW_OF '].'
+                Inserted '.'))>;
     
     (t.C t.I t.D t.T t.O) (CaseVariantSequence e.CV) e.Tokens t.Errs
         = <CaseBlock (t.C t.I t.D t.T t.O (CaseVariantSequence e.CV)) e.Tokens t.Errs>;

@@ -44,7 +44,7 @@ TYPE
       );
       RealNumber : (
         realval : REAL
-      )
+      
   end;
 
   Year = 1900..2050;
@@ -52,4 +52,4 @@ TYPE
   List = record
     value : Token;
     next : ^List
-  end;
+  end

@@ -35,13 +35,15 @@ $ENTRY Constant {
         = <Constant ((UnarSign e.U))
             e.Tokens (e.Errs (t.Start Constant '.'
                 Unexpected t.Type '.'
-                Expected '(' ConstantIdentifier or UNSIGNED_NUMBER ').'
+                Expected '[' ConstantIdentifier or UNSIGNED_NUMBER '].'
                 Skipped '.'))>;
     ((UnarSign e.U)) '$' (e.Errs)
-        = (Constant (EOF)) '$'
-            (e.Errs (Constant '.'
+        = (Constant (EOF))
+            '$'
+            (e.Errs ((EOF) Constant '.'
                 Unexpected End Of File '.'
-                Expected '(' ConstantIdentifier or UNSIGNED_NUMBER ').'));
+                Expected '[' ConstantIdentifier or UNSIGNED_NUMBER '].'
+                Terminated '.'));
 
     ((UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
         = (Constant (UnarSign UNSIGNED_NUMBER) (UnarSign e.U) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
@@ -63,13 +65,15 @@ $ENTRY Constant {
         = <Constant (('\'' e.C1))
             e.Tokens (e.Errs (t.Start Constant '.'
                 Unexpected t.Type '.'
-                Expected '(' CHAR_SEQUENCE ').'
+                Expected '[' CHAR_SEQUENCE '].'
                 Skipped '.'))>;
     (('\'' e.C1)) '$' (e.Errs)
-        = (Constant (EOF)) '$'
-            (e.Errs (Constant '.'
+        = (Constant (EOF))
+            '$'
+            (e.Errs ((EOF) Constant '.'
                 Unexpected End Of File '.'
-                Expected '(' CHAR_SEQUENCE ').'));
+                Expected '[' CHAR_SEQUENCE '].'
+                Terminated '.'));
     
     (('\'' e.C1) t.CS) ('\'' e.C2) e.Tokens t.Errs
         = <Constant (('\'' e.C1) t.CS ('\'' e.C2)) e.Tokens t.Errs>;
@@ -78,13 +82,15 @@ $ENTRY Constant {
             ('\'' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
             e.Tokens (e.Errs (t.Start Constant '.'
                 Unexpected t.Type '.'
-                Expected '(' '\'' ').'
+                Expected '[' '\'' '].'
                 Inserted '.'))>;
     (('\'' e.C1) t.CS) '$' (e.Errs)
-        = (Constant (EOF))
-            (e.Errs (Constant '.'
+        = <Constant (('\'' e.C1) t.CS)
+            ('\'' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) Constant '.'
                 Unexpected End Of File '.'
-                Expected '(' '\'' ').'));
+                Expected '[' '\'' '].'
+                Inserted '.'))>;
     
     (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs
         = (Constant ('\'' CHAR_SEQUENCE '\'') (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs) e.Tokens t.Errs;
@@ -94,11 +100,13 @@ $ENTRY Constant {
         = <Constant ()
             e.Tokens (e.Errs (t.Start Constant '.'
                 Unexpected t.Type '.'
-                Expected '(' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' ').'
+                Expected '[' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' '].'
                 Skipped '.'))>;
     () '$' (e.Errs)
-        = (Constant (EOF)) '$'
-            (e.Errs (Constant '.'
+        = (Constant (EOF))
+            '$'
+            (e.Errs ((EOF) Constant '.'
                 Unexpected End Of File '.'
-                Expected '(' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' ').'));
+                Expected '[' UnarSign or ConstantIdentifier or UNSIGNED_NUMBER or '\'' '].'
+                Terminated '.'));
 }

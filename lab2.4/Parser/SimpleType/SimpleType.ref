@@ -51,13 +51,15 @@ $ENTRY SimpleType {
             ('.' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start SimpleType '.'
                 Unexpected t.Type '.'
-                Expected '(' '.' ').'
+                Expected '[' '.' '].'
                 Inserted '.'))>;
     ((Constant e.C1)) '$' (e.Errs)
-        = (SimpleType (EOF)) '$'
-            (e.Errs (SimpleType '.'
+        = <SimpleType ((Constant e.C1))
+            ('.' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) SimpleType '.'
                 Unexpected End Of File '.'
-                Expected '(' '.' ').'));
+                Expected '[' '.' '].'
+                Inserted '.'))>;
     
     ((Constant e.C1) t.D1) ('.' e.D2) e.Tokens t.Errs
         = <SimpleType ((Constant e.C1) t.D1 ('.' e.D2)) e.Tokens t.Errs>;
@@ -66,13 +68,15 @@ $ENTRY SimpleType {
             ('.' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start SimpleType '.'
                 Unexpected t.Type '.'
-                Expected '(' '.' ').'
+                Expected '[' '.' '].'
                 Inserted '.'))>;
     ((Constant e.C1) t.D1) '$' (e.Errs)
-        = (SimpleType (EOF)) '$'
-            (e.Errs (SimpleType '.'
+        = <SimpleType ((Constant e.C1) t.D1)
+            ('.' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) SimpleType '.'
                 Unexpected End Of File '.'
-                Expected '(' '.' ').'));
+                Expected '[' '.' '].'
+                Inserted '.'))>;
     
     ((Constant e.C1) t.D1 t.D2) (Constant e.C2) e.Tokens t.Errs
         = <SimpleType ((Constant e.C1) t.D1 t.D2 (Constant e.C2)) e.Tokens t.Errs>;

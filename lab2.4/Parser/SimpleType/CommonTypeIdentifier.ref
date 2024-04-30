@@ -38,12 +38,13 @@ $ENTRY CommonTypeIdentifier {
         = <CommonTypeIdentifier ()
             e.Tokens (e.Errs (t.Start CommonTypeIdentifier '.'
                 Unexpected t.Type '.'
-                Expected '(' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT ').'
+                Expected '[' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT '].'
                 Skipped '.'))>;
     () '$' (e.Errs)
-        = (CommonTypeIdentifier (EOF)) '$'
-            (e.Errs (CommonTypeIdentifier '.'
+        = (CommonTypeIdentifier (EOF))
+            '$'
+            (e.Errs ((EOF) CommonTypeIdentifier '.'
                 Unexpected End Of File '.'
-                Expected '(' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT ').'
-                Skipped '.'));
+                Expected '[' KW_INTEGER or KW_BOOLEAN or KW_REAL or KW_CHAR or KW_TEXT '].'
+                Terminated '.'));
 }

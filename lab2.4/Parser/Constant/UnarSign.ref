@@ -17,11 +17,13 @@ $ENTRY UnarSign {
         = <UnarSign ()
             e.Tokens (e.Errs (t.Start UnarSign '.'
                 Unexpected t.Type '.'
-                Expected '(' '+' or '-' ').'
+                Expected '[' '+' or '-' '].'
                 Skipped '.'))>;
     () '$' (e.Errs)
-        = (UnarSign (EOF)) '$'
-            (e.Errs (UnarSign '.'
+        = (UnarSign (EOF))
+            '$'
+            (e.Errs ((EOF) UnarSign '.'
                 Unexpected End Of File '.'
-                Expected '(' '+' or '-' ').'));
+                Expected '[' '+' or '-' '].'
+                Terminated '.'));
 }

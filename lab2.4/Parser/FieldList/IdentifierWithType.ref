@@ -16,13 +16,15 @@ $ENTRY IdentifierWithType {
             (':' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start IdentifierWithType '.'
                 Unexpected t.Type '.'
-                Expected '(' ':' ').'
+                Expected '[' ':' '].'
                 Inserted '.'))>;
     (t.I) '$' (e.Errs)
-        = (IdentifierWithType (EOF)) '$'
-            (e.Errs (IdentifierWithType '.'
+        = <IdentifierWithType (t.I)
+            (':' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) IdentifierWithType '.'
                 Unexpected End Of File '.'
-                Expected '(' ':' ').'));
+                Expected '[' ':' '].'
+                Inserted '.'))>;
     
     (t.I t.D) (Type e.T) e.Tokens t.Errs
         = <IdentifierWithType (t.I t.D (Type e.T)) e.Tokens t.Errs>;

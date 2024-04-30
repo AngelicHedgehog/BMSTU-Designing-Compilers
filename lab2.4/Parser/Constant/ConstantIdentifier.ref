@@ -6,13 +6,15 @@ $ENTRY ConstantIdentifier {
         = <ConstantIdentifier ()
             e.Tokens (e.Errs (t.Start ConstantIdentifier '.'
                 Unexpected t.Type '.'
-                Expected '(' IDENTIFIER ').'
+                Expected '[' IDENTIFIER '].'
                 Skipped '.'))>;
     () '$' (e.Errs)
-        = (ConstantIdentifier (EOF)) '$'
-            (e.Errs (ConstantIdentifier '.'
+        = (ConstantIdentifier (EOF))
+            '$'
+            (e.Errs ((EOF) ConstantIdentifier '.'
                 Unexpected End Of File '.'
-                Expected '(' IDENTIFIER ').'));
+                Expected '[' IDENTIFIER '].'
+                Terminated '.'));
     
     (t.I) e.Tokens t.Errs
         = (ConstantIdentifier (IDENTIFIER) t.I) e.Tokens t.Errs;

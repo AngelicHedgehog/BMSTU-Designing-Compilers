@@ -16,13 +16,15 @@ $ENTRY CaseVariant {
             (':' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseVariant '.'
                 Unexpected t.Type '.'
-                Expected '(' ':' ').'
+                Expected '[' ':' '].'
                 Inserted '.'))>;
     (t.C) '$' (e.Errs)
-        = (CaseVariant (EOF)) '$'
-            (e.Errs (CaseVariant '.'
+        = <CaseVariant (t.C)
+            (':' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseVariant '.'
                 Unexpected End Of File '.'
-                Expected '(' ':' ').'));
+                Expected '[' ':' '].'
+                Inserted '.'))>;
     
     (t.C t.D) ('(' e.B) e.Tokens t.Errs
         = <CaseVariant (t.C t.D ('(' e.B)) e.Tokens t.Errs>;
@@ -31,13 +33,15 @@ $ENTRY CaseVariant {
             ('(' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseVariant '.'
                 Unexpected t.Type '.'
-                Expected '(' '\(' ').'
+                Expected '[' '\(' '].'
                 Inserted '.'))>;
     (t.C t.D) '$' (e.Errs)
-        = (CaseVariant (EOF)) '$'
-            (e.Errs (CaseVariant '.'
+        = <CaseVariant (t.C t.D)
+            ('(' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseVariant '.'
                 Unexpected End Of File '.'
-                Expected '(' '\(' ').'));
+                Expected '[' '\(' '].'
+                Inserted '.'))>;
     
     (t.C t.D t.B) (FieldList e.F) e.Tokens t.Errs
         = <CaseVariant (t.C t.D t.B (FieldList e.F)) e.Tokens t.Errs>;
@@ -51,13 +55,15 @@ $ENTRY CaseVariant {
             (')' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs) 
             e.Tokens (e.Errs (t.Start CaseVariant '.'
                 Unexpected t.Type '.'
-                Expected '(' '\)' ').'
+                Expected '[' '\)' '].'
                 Inserted '.'))>;
     (t.C t.D t.B t.F) '$' (e.Errs)
-        = (CaseVariant (EOF)) '$'
-            (e.Errs (CaseVariant '.'
+        = <CaseVariant (t.C t.D t.B t.F)
+            (')' ((0 0) (0 0))) '$'
+            (e.Errs ((EOF) CaseVariant '.'
                 Unexpected End Of File '.'
-                Expected '(' '\)' ').'));
+                Expected '[' '\)' '].'
+                Inserted '.'))>;
     
     (t.C t.D t.B t.F t.BC) e.Tokens t.Errs
         = (CaseVariant (ConstantList ':' '(' FieldList ')') t.C t.D t.B t.F t.BC) e.Tokens t.Errs;

@@ -149,7 +149,7 @@ Constant -> UnarSign ConstantIdentifier
           | ConstantIdentifier
           | UnarSign UNSIGNED_NUMBER
           | UNSIGNED_NUMBER
-          | '\'' CHAR_SEQUENCE '\''
+          | CHAR_SEQUENCE
 UnarSign -> '+'
           | '-'
 ConstantIdentifier -> IDENTIFIER
@@ -449,45 +449,12 @@ $ENTRY Constant {
     ((UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
         = (Constant (UNSIGNED_NUMBER) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
 
-    /* Constant -> '\'' CHAR_SEQUENCE '\'' */
-    () ('\'' e.C1) e.Tokens t.Errs
-        = <Constant (('\'' e.C1)) e.Tokens t.Errs>;
+    /* Constant -> CHAR_SEQUENCE */
+    () (CHAR_SEQUENCE e.CS) e.Tokens t.Errs
+        = <Constant ((CHAR_SEQUENCE e.CS)) e.Tokens t.Errs>;
     
-    (('\'' e.C1)) (CHAR_SEQUENCE e.CS) e.Tokens t.Errs
-        = <Constant (('\'' e.C1) (CHAR_SEQUENCE e.CS)) e.Tokens t.Errs>;
-    (('\'' e.C1)) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <Constant (('\'' e.C1))
-            e.Tokens (e.Errs (t.Start Constant '.'
-                Unexpected t.Type '.'
-                Expected '[' CHAR_SEQUENCE '].'
-                Skipped '.'))>;
-    (('\'' e.C1)) '$' (e.Errs)
-        = (Constant (EOF))
-            '$'
-            (e.Errs ((EOF) Constant '.'
-                Unexpected End Of File '.'
-                Expected '[' CHAR_SEQUENCE '].'
-                Terminated '.'));
-    
-    (('\'' e.C1) t.CS) ('\'' e.C2) e.Tokens t.Errs
-        = <Constant (('\'' e.C1) t.CS ('\'' e.C2)) e.Tokens t.Errs>;
-    (('\'' e.C1) t.CS) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <Constant (('\'' e.C1) t.CS)
-            ('\'' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
-            e.Tokens (e.Errs (t.Start Constant '.'
-                Unexpected t.Type '.'
-                Expected '[' '\'' '].'
-                Inserted '.'))>;
-    (('\'' e.C1) t.CS) '$' (e.Errs)
-        = <Constant (('\'' e.C1) t.CS)
-            ('\'' ((0 0) (0 0))) '$'
-            (e.Errs ((EOF) Constant '.'
-                Unexpected End Of File '.'
-                Expected '[' '\'' '].'
-                Inserted '.'))>;
-    
-    (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs
-        = (Constant ('\'' CHAR_SEQUENCE '\'') (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs) e.Tokens t.Errs;
+    ((CHAR_SEQUENCE e.CS)) e.Tokens t.Errs
+        = (Constant (CHAR_SEQUENCE) (CHAR_SEQUENCE e.CS)) e.Tokens t.Errs;
     
         
     () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
@@ -1489,19 +1456,15 @@ Lexer-Pos {
     /* CHAR_SEQUENCE ::= (?<=\')[^\']+(?=\') */
     (s.Line s.Col) ('\'' e.Postf) e.Inf (e.Pref '\'' e.Postf2) e.Lines
         , <Add s.Line <Add <Count e.Inf> 1>> <Add <Count e.Pref> 1> : s.Line_ s.Col_
-        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
-            (CHAR_SEQUENCE
+        =   (CHAR_SEQUENCE
                 ((s.Line <Inc s.Col>) (s.Line_ s.Col_))
                 (<Join ('\n') (e.Postf) e.Inf (e.Pref)>))
-            ('\'' ((s.Line_ s.Col_) (s.Line_ <Inc s.Col_>)))
             <Lexer-Pos (s.Line_ <Inc s.Col_>) (e.Postf2) e.Lines>;
     (s.Line s.Col) ('\'' e.Inf '\'' e.Postf) e.Lines
         , <Add s.Col <Add <Count e.Inf> 1>> : s.Col_
-        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
-            (CHAR_SEQUENCE
+        =   (CHAR_SEQUENCE
                 ((s.Line <Inc s.Col>) (s.Line s.Col_))
                 (e.Inf))
-            ('\'' ((s.Line s.Col_) (s.Line <Inc s.Col_>)))
             <Lexer-Pos (s.Line <Inc s.Col_>) (e.Postf) e.Lines>;
 
     /*
@@ -2125,12 +2088,22 @@ Program  -> Block
                                       TypeIdentifier  -> IDENTIFIER
                                         'IDENTIFIER ' -> (54 13 )-(54 17 ) "LIST"
                             'KW_END ' -> (55 3 )-(55 6 )
-                        ';' -> (0 0 )-(0 0 )
-              Block  -> ε
+                        ';' -> (57 1 )-(57 1 )
+              Block  -> KW_CONST BlockConstSequence Block
+                'KW_CONST ' -> (57 1 )-(57 6 )
+                BlockConstSequence  -> BlockConst
+                  BlockConst  -> IDENTIFIER =Constant ;
+                    'IDENTIFIER ' -> (58 3 )-(58 10 ) "CHARSEQ"
+                    '=' -> (58 11 )-(58 12 )
+                    Constant  -> CHAR_SEQUENCE
+                      'CHAR_SEQUENCE ' -> (58 14 )-(59 10 ) "ASD123DWQ
+(  weqe213)"
+                    ';' -> (59 11 )-(59 12 )
+                Block  -> ╬╡
 
 ERRORS:
 Error: (48 3 )CaseVariant .Unexpected KW_END .Expected [)].Inserted .
-Error: (EOF )BlockType .Unexpected End Of File .Expected [;].Inserted .
+Error: (57 1 )BlockType .Unexpected KW_CONST .Expected [;].Inserted .
 ```
 
 # Вывод

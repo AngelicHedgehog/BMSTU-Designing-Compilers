@@ -121,19 +121,15 @@ Lexer-Pos {
     /* CHAR_SEQUENCE ::= (?<=\')[^\']+(?=\') */
     (s.Line s.Col) ('\'' e.Postf) e.Inf (e.Pref '\'' e.Postf2) e.Lines
         , <Add s.Line <Add <Count e.Inf> 1>> <Add <Count e.Pref> 1> : s.Line_ s.Col_
-        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
-            (CHAR_SEQUENCE
+        =   (CHAR_SEQUENCE
                 ((s.Line <Inc s.Col>) (s.Line_ s.Col_))
                 (<Join ('\n') (e.Postf) e.Inf (e.Pref)>))
-            ('\'' ((s.Line_ s.Col_) (s.Line_ <Inc s.Col_>)))
             <Lexer-Pos (s.Line_ <Inc s.Col_>) (e.Postf2) e.Lines>;
     (s.Line s.Col) ('\'' e.Inf '\'' e.Postf) e.Lines
         , <Add s.Col <Add <Count e.Inf> 1>> : s.Col_
-        =   ('\'' ((s.Line s.Col) (s.Line <Inc s.Col>)))
-            (CHAR_SEQUENCE
+        =   (CHAR_SEQUENCE
                 ((s.Line <Inc s.Col>) (s.Line s.Col_))
                 (e.Inf))
-            ('\'' ((s.Line s.Col_) (s.Line <Inc s.Col_>)))
             <Lexer-Pos (s.Line <Inc s.Col_>) (e.Postf) e.Lines>;
 
     /*

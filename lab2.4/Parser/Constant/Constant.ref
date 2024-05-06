@@ -55,45 +55,12 @@ $ENTRY Constant {
     ((UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs
         = (Constant (UNSIGNED_NUMBER) (UNSIGNED_NUMBER e.UN)) e.Tokens t.Errs;
 
-    /* Constant -> '\'' CHAR_SEQUENCE '\'' */
-    () ('\'' e.C1) e.Tokens t.Errs
-        = <Constant (('\'' e.C1)) e.Tokens t.Errs>;
+    /* Constant -> CHAR_SEQUENCE */
+    () (CHAR_SEQUENCE e.CS) e.Tokens t.Errs
+        = <Constant ((CHAR_SEQUENCE e.CS)) e.Tokens t.Errs>;
     
-    (('\'' e.C1)) (CHAR_SEQUENCE e.CS) e.Tokens t.Errs
-        = <Constant (('\'' e.C1) (CHAR_SEQUENCE e.CS)) e.Tokens t.Errs>;
-    (('\'' e.C1)) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <Constant (('\'' e.C1))
-            e.Tokens (e.Errs (t.Start Constant '.'
-                Unexpected t.Type '.'
-                Expected '[' CHAR_SEQUENCE '].'
-                Skipped '.'))>;
-    (('\'' e.C1)) '$' (e.Errs)
-        = (Constant (EOF))
-            '$'
-            (e.Errs ((EOF) Constant '.'
-                Unexpected End Of File '.'
-                Expected '[' CHAR_SEQUENCE '].'
-                Terminated '.'));
-    
-    (('\'' e.C1) t.CS) ('\'' e.C2) e.Tokens t.Errs
-        = <Constant (('\'' e.C1) t.CS ('\'' e.C2)) e.Tokens t.Errs>;
-    (('\'' e.C1) t.CS) (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)
-        = <Constant (('\'' e.C1) t.CS)
-            ('\'' (t.Start t.Start)) (t.Type (t.Start t.End) e.Attrs)
-            e.Tokens (e.Errs (t.Start Constant '.'
-                Unexpected t.Type '.'
-                Expected '[' '\'' '].'
-                Inserted '.'))>;
-    (('\'' e.C1) t.CS) '$' (e.Errs)
-        = <Constant (('\'' e.C1) t.CS)
-            ('\'' ((0 0) (0 0))) '$'
-            (e.Errs ((EOF) Constant '.'
-                Unexpected End Of File '.'
-                Expected '[' '\'' '].'
-                Inserted '.'))>;
-    
-    (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs
-        = (Constant ('\'' CHAR_SEQUENCE '\'') (('\'' e.C1) t.CS t.C2) e.Tokens t.Errs) e.Tokens t.Errs;
+    ((CHAR_SEQUENCE e.CS)) e.Tokens t.Errs
+        = (Constant (CHAR_SEQUENCE) (CHAR_SEQUENCE e.CS)) e.Tokens t.Errs;
     
         
     () (t.Type (t.Start t.End) e.Attrs) e.Tokens (e.Errs)

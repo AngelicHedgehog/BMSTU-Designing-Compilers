@@ -53,3 +53,7 @@ TYPE
     value : Token;
     next : ^List
   end
+
+Const
+  charSeq = 'asd123dwq
+  weqe213';

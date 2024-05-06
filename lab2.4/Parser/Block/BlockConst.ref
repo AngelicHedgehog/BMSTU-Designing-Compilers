@@ -52,7 +52,7 @@ $ENTRY BlockConst {
                 Inserted '.'))>;
     (t.I t.E t.C) '$' (e.Errs)
         = <BlockConst (t.I t.E t.C)
-            ('=' ((0 0) (0 0))) '$'
+            (';' ((0 0) (0 0))) '$'
             (e.Errs ((EOF) BlockConst '.'
                 Unexpected End Of File '.'
                 Expected '[' ';' '].'

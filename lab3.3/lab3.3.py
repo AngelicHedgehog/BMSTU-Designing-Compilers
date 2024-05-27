@@ -129,7 +129,7 @@ class SignedNumberConstant(Constant):
         else:
             signing = lambda x: x
         
-        return singing(self.unsingned_number)
+        return signing(self.unsingned_number)
 
 @dataclass
 class UnsignedNumberConstant(Constant):
@@ -138,7 +138,7 @@ class UnsignedNumberConstant(Constant):
     def check(self, types, consts): pass
 
     def getValue(self, consts):
-        return signing(self.unsingned_number)
+        return self.unsingned_number
 
 @dataclass
 class CharacterConstant(Constant):
@@ -156,6 +156,8 @@ class TypeIdentifier(Identifier): pass
 class SimpleType(abc.ABC):
     @abc.abstractmethod
     def check(self, types, consts): pass
+    @abc.abstractmethod
+    def calcConsts(self, consts): pass
 
 @dataclass
 class DefaultSimpleType(SimpleType):
@@ -171,6 +173,8 @@ class DefaultSimpleType(SimpleType):
     def check(self, types, consts):
         if self.type_identifier not in types:
             raise UnknownType(self.type_identifier_coord, self.type_identifier)
+
+    def calcConsts(self, consts): pass
 
 @dataclass
 class ListSimpleType(SimpleType):
@@ -188,6 +192,10 @@ class ListSimpleType(SimpleType):
             if identifier in consts:
                 raise RepeatedConstant(self.identifier_list_coord, identifier)
             consts.append(identifier)
+    
+    def calcConsts(self, consts):
+        for i, identifier in enumerate(self.identifier_list):
+            consts[identifier] = i
 
 @dataclass
 class BoundedSimpleType(SimpleType):
@@ -197,12 +205,16 @@ class BoundedSimpleType(SimpleType):
     def check(self, types, consts):
         self.left_constant.check(types, consts)
         self.right_constant.check(types, consts)
+    
+    def calcConsts(self, consts): pass
 
 # type
 @dataclass
 class Type(abc.ABC):
     @abc.abstractmethod
     def check(self, types, consts): pass
+    @abc.abstractmethod
+    def calcConsts(self, consts): pass
 
 @dataclass
 class DefaultType(Type):
@@ -210,6 +222,9 @@ class DefaultType(Type):
 
     def check(self, types, consts):
         self.simple_type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        self.simple_type.calcConsts(consts)
 
 @dataclass
 class RefType(Type):
@@ -226,12 +241,17 @@ class RefType(Type):
         if self.type_identifier not in types:
             raise UnknownType(self.type_identifier_coord, self.type_identifier)
 
+    def calcConsts(self, consts): pass
+
 @dataclass
 class PackedType(Type):
     simple_type : SimpleType
 
     def check(self, types, consts):
         self.simple_type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        self.simple_type.calcConsts(consts)
 
 @dataclass
 class ArrayType(Type):
@@ -242,6 +262,11 @@ class ArrayType(Type):
         for simple_type in self.simple_types:
             simple_type.check(types, consts)
         self.type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        for simple_type in self.simple_types:
+            simple_type.calcConsts(consts)
+        self.type.calcConsts(consts)
 
 @dataclass
 class FileType(Type):
@@ -249,6 +274,9 @@ class FileType(Type):
 
     def check(self, types, consts):
         self.type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        self.type.calcConsts(consts)
 
 @dataclass
 class SetType(Type):
@@ -256,6 +284,9 @@ class SetType(Type):
 
     def check(self, types, consts):
         self.simple_type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        self.simple_type.calcConsts(consts)
 
 @dataclass
 class RecordType(Type):
@@ -265,6 +296,9 @@ class RecordType(Type):
 
     def check(self, types, consts):
         self.field_list.check(types, consts, set())
+    
+    def calcConsts(self, consts):
+        self.field_list.calcConsts(consts)
 
 # field list
 @dataclass
@@ -286,6 +320,9 @@ class IdentifierWithType:
             case_vars.add(field)
 
         self.type.check(types, consts)
+    
+    def calcConsts(self, consts):
+        self.type.calcConsts(consts)
 
 @dataclass
 class CaseVariant:
@@ -305,7 +342,8 @@ class CaseVariant:
         for constant in self.constant_list:
             constant.check(types, consts)
         
-        
+    def calcConsts(self, consts):
+        self.field_list.calcConsts(consts)
 
 @dataclass
 class CaseBlock:
@@ -332,6 +370,10 @@ class CaseBlock:
         
         for case_variant in self.case_variant_sequence:
             case_variant.check(types, consts, case_vars)
+    
+    def calcConsts(self, consts):
+        for case_variant in self.case_variant_sequence:
+            case_variant.calcConsts(consts)
 
 @dataclass
 class FieldList:
@@ -344,13 +386,19 @@ class FieldList:
 
         if self.case_block:
             self.case_block.check(types, consts, case_vars)
+    
+    def calcConsts(self, consts):
+        for identifier_with_types in self.identifier_with_types_list:
+            identifier_with_types.calcConsts(consts)
+        if self.case_block:
+            self.case_block.calcConsts(consts)
 
 # block
 class Block(abc.ABC):
     @abc.abstractmethod
     def check(self, types, consts): pass
     @abc.abstractmethod
-    def getConsts(self, consts): pass
+    def calcConsts(self, consts): pass
 
 @dataclass
 class BlockConst(Block):
@@ -371,7 +419,7 @@ class BlockConst(Block):
         self.constant.check(types, consts)
         consts.append(self.identifier)
     
-    def getConsts(self, consts):
+    def calcConsts(self, consts):
         consts[self.identifier] = self.constant.getValue(consts)
 
 @dataclass
@@ -393,7 +441,8 @@ class BlockType(Block):
         types.append(self.identifier)
         self.type.check(types, consts)
     
-    def getConsts(self, consts): pass
+    def calcConsts(self, consts):
+        self.type.calcConsts(consts)
 
 # program
 @dataclass
@@ -419,7 +468,7 @@ class Program:
 
         for blocks_seq in self.block:
             for block in blocks_seq:
-                block.getConsts(consts)
+                block.calcConsts(consts)
         
         return consts
 
@@ -594,7 +643,7 @@ NBlockConstSequence |= (
     lambda bc, bcseq: (bc, *bcseq)
 )
 
-NBlockConst |= IDENTIFIER, '=', NConstant, ';', BlockConst.create
+NBlockConst |= NConstantIdentifier, '=', NConstant, ';', BlockConst.create
 
 NBlockTypeSequence |= NBlockType, lambda bt: (bt,)
 NBlockTypeSequence |= (
@@ -602,7 +651,7 @@ NBlockTypeSequence |= (
     lambda bt, btseq: (bt, *btseq)
 )
 
-NBlockType |= IDENTIFIER, '=', NType, ';', BlockType.create
+NBlockType |= NTypeIdentifier, '=', NType, ';', BlockType.create
 
 # program
 NProgram |= NBlock, Program

@@ -1,5 +1,3 @@
-
-
 Type
   Coords = Record x, y: INTEGER end;
   Boolean = (False, True);

@@ -1,1 +1,1 @@
-python lab2.2.py $1
+python lab3.3.py $1

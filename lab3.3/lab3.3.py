@@ -27,10 +27,24 @@ class Constant(abc.ABC): ...
 class SignedIdentifierConstant(Constant):
     unar_sign : UnarSign
     constant_identifier : ConstantIdentifier
+    constant_identifier_coord : pe.Position
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        unar_sign, constant_identifier = attrs
+        cunar_sign, cconstant_identifier = coords
+        return SignedIdentifierConstant(
+            unar_sign, constant_identifier, cconstant_identifier.start)
 
 @dataclass
 class UnsignedIdentifierConstant(Constant):
     constant_identifier : ConstantIdentifier
+    constant_identifier_coord : pe.Position
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        constant_identifier, = attrs
+        cconstant_identifier, = coords
+        return UnsignedIdentifierConstant(
+            constant_identifier, cconstant_identifier.start)
 
 @dataclass
 class SignedNumberConstant(Constant):
@@ -68,6 +82,13 @@ class SimpleType(abc.ABC): ...
 @dataclass
 class DefaultSimpleType(SimpleType):
     type_identifier : TypeIdentifier
+    type_identifier_coord : pe.Position
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        type_identifier, = attrs
+        ctype_identifier, = coords
+        return DefaultSimpleType(
+            type_identifier, ctype_identifier.start)
 
 @dataclass
 class ListSimpleType(SimpleType):
@@ -88,6 +109,13 @@ class DefaultType(Type):
 @dataclass
 class RefType(Type):
     type_identifier : TypeIdentifier
+    type_identifier_coord : pe.Position
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        type_identifier, = attrs
+        cref_sym, ctype_identifier, = coords
+        return RefType(
+            type_identifier, ctype_identifier.start)
 
 @dataclass
 class PackedType(Type):
@@ -108,20 +136,42 @@ class RecordType(DefaultType): ...
 @dataclass
 class IdentifierWithType:
     identifier_list : tuple[Identifier]
+    identifier_list_coord : pe.Position
     type : Type
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        identifier_list, type_ = attrs
+        cidentifier_list, csemicol, ctype = coords
+        return IdentifierWithType(
+            identifier_list, cidentifier_list.start, type_)
 
 @dataclass
 class CaseVariant:
     class FieldList: ...
 
     constant_list : tuple[Constant]
+    constant_list_coord : pe.Position
     field_list : FieldList
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        constant_list, field_list = attrs
+        cconstant_list, csemicol, copbr, cfield_list, cclbr = coords
+        return CaseVariant(
+            constant_list, cconstant_list.start, field_list)
 
 @dataclass
 class CaseBlock:
     identifier : Identifier
     type_identifier : TypeIdentifier
+    type_identifier_coord : pe.Position
     case_variant_sequence : tuple[CaseVariant]
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        identifier, type_identifier, case_variant_sequence = attrs
+        (ccase, cidentifier, csemicol, ctype_identifier, cof,
+            case_variant_sequence) = coords
+        return CaseBlock(
+            identifier, type_identifier, ctype_identifier.start, case_variant_sequence)
 
 @dataclass
 class FieldList:
@@ -221,8 +271,8 @@ NBlockType              = pe.NonTerminal('block type')
 NProgram                = pe.NonTerminal('program')
 
 # constant
-NConstant |= NUnarSign, NConstantIdentifier, SignedIdentifierConstant
-NConstant |= NConstantIdentifier, UnsignedIdentifierConstant
+NConstant |= NUnarSign, NConstantIdentifier, SignedIdentifierConstant.create
+NConstant |= NConstantIdentifier, UnsignedIdentifierConstant.create
 NConstant |= NUnarSign, UNSINGNED_NUMBER, SignedNumberConstant
 NConstant |= UNSINGNED_NUMBER, UnsignedNumberConstant
 NConstant |= '\'', CHAR_SEQUENCE, '\'', CharacterConstant
@@ -233,7 +283,7 @@ NUnarSign |= '-', lambda: UnarSign.Minus
 NConstantIdentifier |= IDENTIFIER
 
 # simple type
-NSimpleType |= NTypeIdentifier, DefaultSimpleType
+NSimpleType |= NTypeIdentifier, DefaultSimpleType.create
 NSimpleType |= '(', NIdentifierList, ')', ListSimpleType
 NSimpleType |= NConstant, '..', NConstant, BoundedSimpleType
 
@@ -254,7 +304,7 @@ NIdentifierList |= (
 
 # type
 NType |= NSimpleType, DefaultType
-NType |= '^', NTypeIdentifier, RefType
+NType |= '^', NTypeIdentifier, RefType.create
 NType |= KW_PACKED, NTypeAfterPacked, PackedType
 NType |= NTypeAfterPacked
 
@@ -288,12 +338,12 @@ NIdentifierWithTypeSeq |= (
     lambda iwt, iwtseq: (iwt, *iwtseq)
 )
 
-NIdentifierWithType |= NIdentifierList, ':', NType, IdentifierWithType
+NIdentifierWithType |= NIdentifierList, ':', NType, IdentifierWithType.create
 
 NCaseBlock |= (
     KW_CASE, IDENTIFIER, ':', NTypeIdentifier, KW_OF,
     NCaseVariantSequence,
-    CaseBlock
+    CaseBlock.create
 )
 
 NCaseVariantSequence |= NCaseVariant, lambda cblock: (cblock,)
@@ -303,7 +353,7 @@ NCaseVariantSequence |= (
 )
 
 NCaseVariant |= (
-    NConstantList, ':', '(', NFieldList, ')', CaseVariant
+    NConstantList, ':', '(', NFieldList, ')', CaseVariant.create
 )
 
 NConstantList |= NConstant, lambda c: (c,)
@@ -354,8 +404,7 @@ for filename in sys.argv[1:]:
     try:
         with open(filename) as f:
             tree = p.parse(f.read())
-            pprint(tree)
+            # tree.check()
+            print('Семантических ошибок не найдено')
     except pe.Error as e:
         print(f'Ошибка {e.pos}: {e.message}')
-    except Exception as e:
-        print(e)

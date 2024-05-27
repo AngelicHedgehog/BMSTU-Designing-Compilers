@@ -39,7 +39,7 @@ class UnknownConstant(SemanticError):
 
     @property
     def message(self):
-        return f'Неопределенная константа {self.const}'
+        return f'Неопределенная константа {self.constname}'
 
 @dataclass
 class RepeatedConstant(SemanticError):
@@ -96,7 +96,8 @@ class SignedIdentifierConstant(Constant):
         else:
             signing = lambda x: x
         
-        return singing(consts[self.constant_identifier])
+        self.value = singing(consts[self.constant_identifier])
+        return self.value
 
 @dataclass
 class UnsignedIdentifierConstant(Constant):
@@ -114,7 +115,8 @@ class UnsignedIdentifierConstant(Constant):
             raise UnknownConstant(self.constant_identifier_coord, self.constant_identifier)
 
     def getValue(self, consts):
-        return consts[self.constant_identifier]
+        self.value = consts[self.constant_identifier]
+        return self.value
 
 @dataclass
 class SignedNumberConstant(Constant):
@@ -129,7 +131,8 @@ class SignedNumberConstant(Constant):
         else:
             signing = lambda x: x
         
-        return signing(self.unsingned_number)
+        self.value = signing(self.unsingned_number)
+        return self.value
 
 @dataclass
 class UnsignedNumberConstant(Constant):
@@ -138,7 +141,8 @@ class UnsignedNumberConstant(Constant):
     def check(self, types, consts): pass
 
     def getValue(self, consts):
-        return self.unsingned_number
+        self.value = self.unsingned_number
+        return self.value
 
 @dataclass
 class CharacterConstant(Constant):
@@ -147,7 +151,8 @@ class CharacterConstant(Constant):
     def check(self, types, consts): pass
 
     def getValue(self, consts):
-        return self.char_sequence
+        self.value = self.char_sequence
+        return self.value
 
 # simple type
 class TypeIdentifier(Identifier): pass
@@ -158,6 +163,10 @@ class SimpleType(abc.ABC):
     def check(self, types, consts): pass
     @abc.abstractmethod
     def calcConsts(self, consts): pass
+    @abc.abstractmethod
+    def getTypeSize(self, types): pass
+    @abc.abstractmethod
+    def getValuesCount(self): pass
 
 @dataclass
 class DefaultSimpleType(SimpleType):
@@ -173,8 +182,16 @@ class DefaultSimpleType(SimpleType):
     def check(self, types, consts):
         if self.type_identifier not in types:
             raise UnknownType(self.type_identifier_coord, self.type_identifier)
+        
+        self.actual_type = types[self.type_identifier]
 
     def calcConsts(self, consts): pass
+
+    def getTypeSize(self, types):
+        return types[self.type_identifier]
+
+    def getValuesCount(self):
+        return self.actual_type.getValuesCount()
 
 @dataclass
 class ListSimpleType(SimpleType):
@@ -196,6 +213,12 @@ class ListSimpleType(SimpleType):
     def calcConsts(self, consts):
         for i, identifier in enumerate(self.identifier_list):
             consts[identifier] = i
+    
+    def getTypeSize(self, types):
+        return 2
+
+    def getValuesCount(self):
+        return len(self.identifier_list)
 
 @dataclass
 class BoundedSimpleType(SimpleType):
@@ -206,7 +229,22 @@ class BoundedSimpleType(SimpleType):
         self.left_constant.check(types, consts)
         self.right_constant.check(types, consts)
     
-    def calcConsts(self, consts): pass
+    def calcConsts(self, consts):
+        self.left_constant.getValue(consts)
+        self.right_constant.getValue(consts)
+
+    def getTypeSize(self, types):
+        const_val = self.left_constant.value
+
+        if isinstance(const_val, str):
+            return None
+        if const_val % 1 == 0:
+            return 2
+        else:
+            return 4
+
+    def getValuesCount(self):
+        return int(self.right_constant.value - self.left_constant.value) + 1
 
 # type
 @dataclass
@@ -215,6 +253,10 @@ class Type(abc.ABC):
     def check(self, types, consts): pass
     @abc.abstractmethod
     def calcConsts(self, consts): pass
+    @abc.abstractmethod
+    def getTypeSize(self, types): pass
+    @abc.abstractmethod
+    def getValuesCount(self): pass
 
 @dataclass
 class DefaultType(Type):
@@ -225,6 +267,12 @@ class DefaultType(Type):
     
     def calcConsts(self, consts):
         self.simple_type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return self.simple_type.getTypeSize(types)
+
+    def getValuesCount(self):
+        return self.simple_type.getValuesCount()
 
 @dataclass
 class RefType(Type):
@@ -243,6 +291,12 @@ class RefType(Type):
 
     def calcConsts(self, consts): pass
 
+    def getTypeSize(self, types):
+        return 4
+    
+    def getValuesCount(self):
+        return None
+
 @dataclass
 class PackedType(Type):
     simple_type : SimpleType
@@ -252,6 +306,12 @@ class PackedType(Type):
     
     def calcConsts(self, consts):
         self.simple_type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return self.simple_type.getTypeSize(types)
+
+    def getValuesCount(self):
+        return None
 
 @dataclass
 class ArrayType(Type):
@@ -267,6 +327,15 @@ class ArrayType(Type):
         for simple_type in self.simple_types:
             simple_type.calcConsts(consts)
         self.type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return sum(
+            simple_type.getValuesCount()
+                for simple_type in self.simple_types
+            ) * self.type.getTypeSize(types)
+        
+    def getValuesCount(self):
+        return None
 
 @dataclass
 class FileType(Type):
@@ -277,6 +346,12 @@ class FileType(Type):
     
     def calcConsts(self, consts):
         self.type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return None
+        
+    def getValuesCount(self):
+        return None
 
 @dataclass
 class SetType(Type):
@@ -287,6 +362,12 @@ class SetType(Type):
     
     def calcConsts(self, consts):
         self.simple_type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return (self.simple_type.getValuesCount() + 7) // 8
+        
+    def getValuesCount(self):
+        return None
 
 @dataclass
 class RecordType(Type):
@@ -299,6 +380,12 @@ class RecordType(Type):
     
     def calcConsts(self, consts):
         self.field_list.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return self.field_list.getTypeSize(types)
+        
+    def getValuesCount(self):
+        return None
 
 # field list
 @dataclass
@@ -323,6 +410,9 @@ class IdentifierWithType:
     
     def calcConsts(self, consts):
         self.type.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return len(self.identifier_list) * self.type.getTypeSize(types)
 
 @dataclass
 class CaseVariant:
@@ -344,10 +434,13 @@ class CaseVariant:
         
     def calcConsts(self, consts):
         self.field_list.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        return self.field_list.getTypeSize(types)
 
 @dataclass
 class CaseBlock:
-    identifier : Identifier
+    identifier : TypeIdentifier
     identifier_coord : pe.Position
     type_identifier : TypeIdentifier
     type_identifier_coord : pe.Position
@@ -374,6 +467,15 @@ class CaseBlock:
     def calcConsts(self, consts):
         for case_variant in self.case_variant_sequence:
             case_variant.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        type_size = types[self.type_identifier]
+        type_size += max(
+            case_variant.getTypeSize(types)
+                for case_variant in self.case_variant_sequence)
+        
+        return type_size
+
 
 @dataclass
 class FieldList:
@@ -392,6 +494,15 @@ class FieldList:
             identifier_with_types.calcConsts(consts)
         if self.case_block:
             self.case_block.calcConsts(consts)
+    
+    def getTypeSize(self, types):
+        type_size = 0
+        for identifier_with_types in self.identifier_with_types_list:
+            type_size += identifier_with_types.getTypeSize(types)
+        if self.case_block:
+            type_size += self.case_block.getTypeSize(types)
+
+        return type_size
 
 # block
 class Block(abc.ABC):
@@ -399,6 +510,8 @@ class Block(abc.ABC):
     def check(self, types, consts): pass
     @abc.abstractmethod
     def calcConsts(self, consts): pass
+    @abc.abstractmethod
+    def calcTypeSizes(self, types): pass
 
 @dataclass
 class BlockConst(Block):
@@ -421,6 +534,8 @@ class BlockConst(Block):
     
     def calcConsts(self, consts):
         consts[self.identifier] = self.constant.getValue(consts)
+    
+    def calcTypeSizes(self, types): pass
 
 @dataclass
 class BlockType(Block):
@@ -438,11 +553,14 @@ class BlockType(Block):
         if self.identifier in consts:
             raise RepeatedType(self.identifier_coord, self.identifier)
 
-        types.append(self.identifier)
+        types[self.identifier] = self.type
         self.type.check(types, consts)
     
     def calcConsts(self, consts):
         self.type.calcConsts(consts)
+    
+    def calcTypeSizes(self, types):
+        types[self.identifier] = self.type.getTypeSize(types)
 
 # program
 @dataclass
@@ -450,13 +568,13 @@ class Program:
     block : Block
 
     def check(self):
-        types = [
-            'INTEGER',
-            'BOOLEAN',
-            'REAL',
-            'CHAR',
-            'TEXT',
-        ]
+        types = {
+            'INTEGER': None,
+            'BOOLEAN': None,
+            'REAL': None,
+            'CHAR': None,
+            'TEXT': None,
+        }
         consts = []
 
         for blocks_seq in self.block:
@@ -471,6 +589,21 @@ class Program:
                 block.calcConsts(consts)
         
         return consts
+    
+    def getTypeSizes(self):
+        types = {
+            'INTEGER': 2,
+            'BOOLEAN': None,
+            'REAL': 4,
+            'CHAR': 0,
+            'TEXT': None,
+        }
+
+        for blocks_seq in self.block:
+            for block in blocks_seq:
+                block.calcTypeSizes(types)
+        
+        return types
 
 UNAR_SIGN = pe.Terminal(
     'UNAR_SIGN',
@@ -589,6 +722,7 @@ NTypeIdentifier |= IDENTIFIER
 # field list
 NFieldList |= NIdentifierWithTypeList, FieldList
 NFieldList |= NIdentifierWithTypeSeq, NCaseBlock, FieldList
+NFieldList |= NCaseBlock, lambda c: FieldList((), c)
 
 NIdentifierWithTypeList |= NIdentifierWithType, lambda iwt: (iwt,)
 NIdentifierWithTypeList |= (
@@ -671,6 +805,7 @@ for filename in sys.argv[1:]:
             tree.check()
             print('Программа корректна')
 
-            print(dumps(tree.getConsts(), indent=4))
+            print(dumps(tree.getConsts(), indent=2))
+            print(dumps(tree.getTypeSizes(), indent=2))
     except pe.Error as e:
         print(f'Ошибка {e.pos}: {e.message}')

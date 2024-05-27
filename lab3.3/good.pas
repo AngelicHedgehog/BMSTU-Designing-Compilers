@@ -1,5 +1,8 @@
+
+
 Type
   Coords = Record x, y: INTEGER end;
+  Boolean = (False, True);
 Const
   MaxPoints = 100;
 type
@@ -20,6 +23,11 @@ type
       SymColor : Color;
       BackColor : Color
     end;
+  Screen = record
+    case isText : Boolean of
+      True : (text : TextScreen);
+      False : (graphic : GraphicScreen)
+  end;
 
 (* определения токенов }
 { определения токенов *)
@@ -37,7 +45,7 @@ TYPE
     end;
     case tokType : Domain of
       Ident : (
-        fragment : array 1..32 of CHAR
+        name : array 1..32 of CHAR
       );
       IntNumber : (
         intval : INTEGER

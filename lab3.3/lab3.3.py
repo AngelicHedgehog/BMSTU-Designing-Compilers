@@ -6,6 +6,58 @@ import re
 import typing
 from dataclasses import dataclass
 from pprint import pprint
+from json import dumps
+
+@dataclass
+class Identifier:
+    name : str
+
+class SemanticError(pe.Error): pass
+
+@dataclass
+class UnknownType(SemanticError):
+    pos : typing.Any
+    typename : Identifier
+
+    @property
+    def message(self):
+        return f'Неопределенный тип {self.typename}'
+
+@dataclass
+class RepeatedType(SemanticError):
+    pos : typing.Any
+    typename : Identifier
+
+    @property
+    def message(self):
+        return f'Повторное определение типа {self.typename}'
+
+@dataclass
+class UnknownConstant(SemanticError):
+    pos : typing.Any
+    constname : Identifier
+
+    @property
+    def message(self):
+        return f'Неопределенная константа {self.const}'
+
+@dataclass
+class RepeatedConstant(SemanticError):
+    pos : typing.Any
+    constname : Identifier
+
+    @property
+    def message(self):
+        return f'Повторное определение константы {self.constname}'
+
+@dataclass
+class RepeatedField(SemanticError):
+    pos : typing.Any
+    fieldname : Identifier
+
+    @property
+    def message(self):
+        return f'Повторное использование в записи поля {self.fieldname}'
 
 
 # constant
@@ -13,15 +65,14 @@ class UnarSign(enum.Enum):
     Plus = 'PLUS'
     Minus = 'MINUS'
 
-@dataclass
-class Identifier:
-    name : str
+class ConstantIdentifier(Identifier): pass
 
 @dataclass
-class ConstantIdentifier:
-    identifier : Identifier
-
-class Constant(abc.ABC): ...
+class Constant(abc.ABC):
+    @abc.abstractmethod
+    def check(self, types, consts): pass
+    @abc.abstractmethod
+    def getValue(self, consts): pass
 
 @dataclass
 class SignedIdentifierConstant(Constant):
@@ -34,6 +85,18 @@ class SignedIdentifierConstant(Constant):
         cunar_sign, cconstant_identifier = coords
         return SignedIdentifierConstant(
             unar_sign, constant_identifier, cconstant_identifier.start)
+    
+    def check(self, types, consts):
+        if self.constant_identifier not in consts:
+            raise UnknownConstant(self.constant_identifier_coord, self.constant_identifier)
+    
+    def getValue(self, consts):
+        if self.unar_sign == UnarSign.Minus:
+            signing = lambda x: -x
+        else:
+            signing = lambda x: x
+        
+        return singing(consts[self.constant_identifier])
 
 @dataclass
 class UnsignedIdentifierConstant(Constant):
@@ -45,39 +108,54 @@ class UnsignedIdentifierConstant(Constant):
         cconstant_identifier, = coords
         return UnsignedIdentifierConstant(
             constant_identifier, cconstant_identifier.start)
+    
+    def check(self, types, consts):
+        if self.constant_identifier not in consts:
+            raise UnknownConstant(self.constant_identifier_coord, self.constant_identifier)
+
+    def getValue(self, consts):
+        return consts[self.constant_identifier]
 
 @dataclass
 class SignedNumberConstant(Constant):
     unar_sign : UnarSign
     unsingned_number : float
 
+    def check(self, types, consts): pass
+
+    def getValue(self, consts):
+        if self.unar_sign == UnarSign.Minus:
+            signing = lambda x: -x
+        else:
+            signing = lambda x: x
+        
+        return singing(self.unsingned_number)
+
 @dataclass
 class UnsignedNumberConstant(Constant):
     unsingned_number : float
+
+    def check(self, types, consts): pass
+
+    def getValue(self, consts):
+        return signing(self.unsingned_number)
 
 @dataclass
 class CharacterConstant(Constant):
     char_sequence : str
 
+    def check(self, types, consts): pass
+
+    def getValue(self, consts):
+        return self.char_sequence
+
 # simple type
-class TypeIdentifier(abc.ABC): ...
-
-class EnumTypeIdentifier(enum.Enum):
-    Integer = 'INTEGER'
-    Boolean = 'BOOLEAN'
-    Real = 'REAL'
-    Char = 'CHAR'
-    Text = 'TEXT'
+class TypeIdentifier(Identifier): pass
 
 @dataclass
-class CommonTypeIdentifier(TypeIdentifier):
-    common_type_identifier : EnumTypeIdentifier
-
-@dataclass
-class IdentifierTypeIdentificator:
-    identifier : Identifier
-
-class SimpleType(abc.ABC): ...
+class SimpleType(abc.ABC):
+    @abc.abstractmethod
+    def check(self, types, consts): pass
 
 @dataclass
 class DefaultSimpleType(SimpleType):
@@ -89,22 +167,49 @@ class DefaultSimpleType(SimpleType):
         ctype_identifier, = coords
         return DefaultSimpleType(
             type_identifier, ctype_identifier.start)
+    
+    def check(self, types, consts):
+        if self.type_identifier not in types:
+            raise UnknownType(self.type_identifier_coord, self.type_identifier)
 
 @dataclass
 class ListSimpleType(SimpleType):
-    identifier_list : tuple[Identifier]
+    identifier_list : tuple[ConstantIdentifier]
+    identifier_list_coord : pe.Position
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        identifier_list, = attrs
+        copbr, cidentifier_list, cclbr = coords
+        return ListSimpleType(
+            identifier_list, cidentifier_list.start)
+
+    def check(self, types, consts):
+        for identifier in self.identifier_list:
+            if identifier in consts:
+                raise RepeatedConstant(self.identifier_list_coord, identifier)
+            consts.append(identifier)
 
 @dataclass
 class BoundedSimpleType(SimpleType):
     left_constant : Constant
     right_constant : Constant
 
+    def check(self, types, consts):
+        self.left_constant.check(types, consts)
+        self.right_constant.check(types, consts)
+
 # type
-class Type(abc.ABC): ...
+@dataclass
+class Type(abc.ABC):
+    @abc.abstractmethod
+    def check(self, types, consts): pass
 
 @dataclass
 class DefaultType(Type):
     simple_type : SimpleType
+
+    def check(self, types, consts):
+        self.simple_type.check(types, consts)
 
 @dataclass
 class RefType(Type):
@@ -116,21 +221,50 @@ class RefType(Type):
         cref_sym, ctype_identifier, = coords
         return RefType(
             type_identifier, ctype_identifier.start)
+    
+    def check(self, types, consts):
+        if self.type_identifier not in types:
+            raise UnknownType(self.type_identifier_coord, self.type_identifier)
 
 @dataclass
 class PackedType(Type):
     simple_type : SimpleType
+
+    def check(self, types, consts):
+        self.simple_type.check(types, consts)
 
 @dataclass
 class ArrayType(Type):
     simple_types : tuple[SimpleType]
     type : Type
 
-class FileType(DefaultType): ...
+    def check(self, types, consts):
+        for simple_type in self.simple_types:
+            simple_type.check(types, consts)
+        self.type.check(types, consts)
 
-class SetType(DefaultType): ...
+@dataclass
+class FileType(Type):
+    type : Type
 
-class RecordType(DefaultType): ...
+    def check(self, types, consts):
+        self.type.check(types, consts)
+
+@dataclass
+class SetType(Type):
+    simple_type : SimpleType
+
+    def check(self, types, consts):
+        self.simple_type.check(types, consts)
+
+@dataclass
+class RecordType(Type):
+    class FieldList: pass
+
+    field_list : FieldList
+
+    def check(self, types, consts):
+        self.field_list.check(types, consts, set())
 
 # field list
 @dataclass
@@ -145,9 +279,17 @@ class IdentifierWithType:
         return IdentifierWithType(
             identifier_list, cidentifier_list.start, type_)
 
+    def check(self, types, consts, case_vars):
+        for field in self.identifier_list:
+            if field in case_vars:
+                raise RepeatedField(self.identifier_list_coord, field)
+            case_vars.add(field)
+
+        self.type.check(types, consts)
+
 @dataclass
 class CaseVariant:
-    class FieldList: ...
+    class FieldList: pass
 
     constant_list : tuple[Constant]
     constant_list_coord : pe.Position
@@ -158,10 +300,17 @@ class CaseVariant:
         cconstant_list, csemicol, copbr, cfield_list, cclbr = coords
         return CaseVariant(
             constant_list, cconstant_list.start, field_list)
+    
+    def check(self, types, consts, case_vars):
+        for constant in self.constant_list:
+            constant.check(types, consts)
+        
+        
 
 @dataclass
 class CaseBlock:
     identifier : Identifier
+    identifier_coord : pe.Position
     type_identifier : TypeIdentifier
     type_identifier_coord : pe.Position
     case_variant_sequence : tuple[CaseVariant]
@@ -169,32 +318,110 @@ class CaseBlock:
     def create(attrs, coords, res_coord):
         identifier, type_identifier, case_variant_sequence = attrs
         (ccase, cidentifier, csemicol, ctype_identifier, cof,
-            case_variant_sequence) = coords
+            ccase_variant_sequence) = coords
         return CaseBlock(
-            identifier, type_identifier, ctype_identifier.start, case_variant_sequence)
+            identifier, cidentifier.start, type_identifier, ctype_identifier.start,
+            case_variant_sequence)
+
+    def check(self, types, consts, case_vars):
+        if self.identifier in case_vars:
+            raise RepeatedField(self.identifier_coord, self.identifier)
+        
+        if self.type_identifier not in types:
+            raise UnknownType(self.type_identifier_coord, self.type_identifier)
+        
+        for case_variant in self.case_variant_sequence:
+            case_variant.check(types, consts, case_vars)
 
 @dataclass
 class FieldList:
     identifier_with_types_list : tuple[IdentifierWithType]
     case_block : typing.Optional[CaseBlock] = None
 
+    def check(self, types, consts, case_vars):
+        for identifier_with_types in self.identifier_with_types_list:
+            identifier_with_types.check(types, consts, case_vars)
+
+        if self.case_block:
+            self.case_block.check(types, consts, case_vars)
+
 # block
-class Block(abc.ABC): ...
+class Block(abc.ABC):
+    @abc.abstractmethod
+    def check(self, types, consts): pass
+    @abc.abstractmethod
+    def getConsts(self, consts): pass
 
 @dataclass
 class BlockConst(Block):
     identifier : Identifier
+    identifier_coord : pe.Position
     constant : Constant
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        identifier, constant = attrs
+        cidentifier, ceq, cconstant, csemicol = coords
+        return BlockConst(
+            identifier, cidentifier.start, constant)
+
+    def check(self, types, consts):
+        if self.identifier in consts:
+            raise RepeatedConstant(self.identifier_coord, self.identifier)
+
+        self.constant.check(types, consts)
+        consts.append(self.identifier)
+    
+    def getConsts(self, consts):
+        consts[self.identifier] = self.constant.getValue(consts)
 
 @dataclass
 class BlockType(Block):
     identifier : Identifier
+    identifier_coord : pe.Position
     type : Type
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        identifier, type_ = attrs
+        cidentifier, ceq, ctype, csemicol = coords
+        return BlockType(
+            identifier, cidentifier.start, type_)
+
+    def check(self, types, consts):
+        if self.identifier in consts:
+            raise RepeatedType(self.identifier_coord, self.identifier)
+
+        types.append(self.identifier)
+        self.type.check(types, consts)
+    
+    def getConsts(self, consts): pass
 
 # program
 @dataclass
 class Program:
     block : Block
+
+    def check(self):
+        types = [
+            'INTEGER',
+            'BOOLEAN',
+            'REAL',
+            'CHAR',
+            'TEXT',
+        ]
+        consts = []
+
+        for blocks_seq in self.block:
+            for block in blocks_seq:
+                block.check(types, consts)
+    
+    def getConsts(self):
+        consts = {}
+
+        for blocks_seq in self.block:
+            for block in blocks_seq:
+                block.getConsts(consts)
+        
+        return consts
 
 UNAR_SIGN = pe.Terminal(
     'UNAR_SIGN',
@@ -223,11 +450,6 @@ def make_keyword(image):
         re_flags=re.IGNORECASE, priority=10
     )
 
-KW_INTEGER  = make_keyword('INTEGER')
-KW_BOOLEAN  = make_keyword('BOOLEAN')
-KW_REAL     = make_keyword('REAL')
-KW_CHAR     = make_keyword('CHAR')
-KW_TEXT     = make_keyword('TEXT')
 KW_PACKED   = make_keyword('PACKED')
 KW_ARRAY    = make_keyword('ARRAY')
 KW_OF       = make_keyword('OF')
@@ -283,18 +505,9 @@ NUnarSign |= '-', lambda: UnarSign.Minus
 NConstantIdentifier |= IDENTIFIER
 
 # simple type
-NSimpleType |= NTypeIdentifier, DefaultSimpleType.create
-NSimpleType |= '(', NIdentifierList, ')', ListSimpleType
+NSimpleType |= IDENTIFIER, DefaultSimpleType.create
+NSimpleType |= '(', NIdentifierList, ')', ListSimpleType.create
 NSimpleType |= NConstant, '..', NConstant, BoundedSimpleType
-
-NTypeIdentifier |= NCommonTypeIdentifier, CommonTypeIdentifier
-NTypeIdentifier |= IDENTIFIER, IdentifierTypeIdentificator
-
-NCommonTypeIdentifier |= KW_INTEGER, lambda: EnumTypeIdentifier.Integer
-NCommonTypeIdentifier |= KW_BOOLEAN, lambda: EnumTypeIdentifier.Boolean
-NCommonTypeIdentifier |= KW_REAL, lambda: EnumTypeIdentifier.Real
-NCommonTypeIdentifier |= KW_CHAR, lambda: EnumTypeIdentifier.Char
-NCommonTypeIdentifier |= KW_TEXT, lambda: EnumTypeIdentifier.Text
 
 NIdentifierList |= IDENTIFIER, lambda id: (id,)
 NIdentifierList |= (
@@ -321,6 +534,8 @@ NSimpleTypeList |= (
     NSimpleType, ',', NSimpleTypeList,
     lambda st, stlist: (st, *stlist)
 )
+
+NTypeIdentifier |= IDENTIFIER
 
 # field list
 NFieldList |= NIdentifierWithTypeList, FieldList
@@ -379,7 +594,7 @@ NBlockConstSequence |= (
     lambda bc, bcseq: (bc, *bcseq)
 )
 
-NBlockConst |= IDENTIFIER, '=', NConstant, ';', BlockConst
+NBlockConst |= IDENTIFIER, '=', NConstant, ';', BlockConst.create
 
 NBlockTypeSequence |= NBlockType, lambda bt: (bt,)
 NBlockTypeSequence |= (
@@ -387,7 +602,7 @@ NBlockTypeSequence |= (
     lambda bt, btseq: (bt, *btseq)
 )
 
-NBlockType |= IDENTIFIER, '=', NType, ';', BlockType
+NBlockType |= IDENTIFIER, '=', NType, ';', BlockType.create
 
 # program
 NProgram |= NBlock, Program
@@ -404,7 +619,9 @@ for filename in sys.argv[1:]:
     try:
         with open(filename) as f:
             tree = p.parse(f.read())
-            # tree.check()
-            print('Семантических ошибок не найдено')
+            tree.check()
+            print('Программа корректна')
+
+            print(dumps(tree.getConsts(), indent=4))
     except pe.Error as e:
         print(f'Ошибка {e.pos}: {e.message}')

@@ -37,7 +37,7 @@ TYPE
     end;
     case tokType : Domain of
       Ident : (
-        name : array 1..32 of CHAR
+        fragment : array 1..32 of CHAR
       );
       IntNumber : (
         intval : INTEGER

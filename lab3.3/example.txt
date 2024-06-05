@@ -1,0 +1,44 @@
+OneTwoThree = (One, Two, Three);
+r = record
+  x : integer;
+  y : real;
+  fruit : (Apple, Orange, Banana);
+  case x : OneTwoThree of
+    One : (a : integer; b : real);
+	Two : (c : real);
+	Three : (d : integer);
+end;
+
+s = record
+  case real : INTEGER of
+    1 : (...);
+	2 : (...);
+	7 : (...);
+	10 : (...)
+end;
+
+year = (1900..2050);
+t = record
+  case b : year of
+    1920 : (...);
+	1950 : (...);
+	2000 : (...)
+end;
+
+struct r {
+  int x;
+  double y;
+  enum { One, Two, Three } s;
+  union {
+    struct {
+	  int a;
+	  double b;
+	};
+	struct {
+	  double c;
+	};
+	struct {
+	  int d;
+	};
+  };
+};
